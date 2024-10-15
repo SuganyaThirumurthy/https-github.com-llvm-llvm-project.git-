@@ -2485,16 +2485,18 @@ bool Type::isSVESizelessBuiltinType() const {
     switch (BT->getKind()) {
       // SVE Types
 #define SVE_VECTOR_TYPE(Name, MangledName, Id, SingletonId)                    \
-  case BuiltinType::Id:
-#define SVE_OPAQUE_TYPE(Name, MangledName, Id, SingletonId)                    \
-  case BuiltinType::Id:
-#define SVE_PREDICATE_TYPE(Name, MangledName, Id, SingletonId)                 \
-  case BuiltinType::Id:
-#define AARCH64_SCALAR_TYPE(Acronym, Name, MangledName, Id, SingletonId)
-#include "clang/Basic/AArch64SVEACLETypes.def"
+    case BuiltinType::Id:                                                      \
       return true;
-    case BuiltinType::ArmMFloat8:
+#define SVE_OPAQUE_TYPE(Name, MangledName, Id, SingletonId)                    \
+     case BuiltinType::Id:                                                     \
+      return true;
+#define SVE_PREDICATE_TYPE(Name, MangledName, Id, SingletonId)                 \
+  case BuiltinType::Id:                                                        \
+      return true;
+#define AARCH64_SCALAR_TYPE(Name, MangledName, Id, SingletonId)                \
+  case BuiltinType::Id:
       return false;
+#include "clang/Basic/AArch64SVEACLETypes.def"
     default:
       return false;
     }

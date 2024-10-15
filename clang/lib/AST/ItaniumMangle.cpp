@@ -3406,7 +3406,7 @@ void CXXNameMangler::mangleType(const BuiltinType *T) {
     type_name = MangledName;                                                   \
     Out << (type_name == Name ? "u" : "") << type_name.size() << type_name;    \
     break;
-#define AARCH64_SCALAR_TYPE(Acronym, Name, MangledName, Id, SingletonId)       \
+#define AARCH64_SCALAR_TYPE(Name, MangledName, Id, SingletonId)                \
   case BuiltinType::Id:                                                        \
     type_name = MangledName;                                                   \
     Out << (type_name == Name ? "u" : "") << type_name.size() << type_name;    \

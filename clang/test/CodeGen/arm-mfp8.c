@@ -2,7 +2,7 @@
 // RUN: %clang_cc1 -emit-llvm -triple aarch64-arm-none-eabi -target-feature -fp8 -o - %s | FileCheck %s
 
 // REQUIRES: aarch64-registered-target
-
+#include<arm_neon.h>
 // CHECK-LABEL: define dso_local <1 x i8> @func1n(
 // CHECK-SAME: <1 x i8> [[MFP8:%.*]]) #[[ATTR0:[0-9]+]] {
 // CHECK-NEXT:  entry:

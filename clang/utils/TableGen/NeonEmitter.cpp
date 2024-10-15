@@ -205,7 +205,6 @@ public:
   bool isLong() const { return isInteger() && ElementBitwidth == 64; }
   bool isVoid() const { return Kind == Void; }
   bool isBFloat16() const { return Kind == BFloat16; }
-  bool isMFloat8() const { return Kind == MFloat8; }
   unsigned getNumElements() const { return Bitwidth / ElementBitwidth; }
   unsigned getSizeInBits() const { return Bitwidth; }
   unsigned getElementSizeInBits() const { return ElementBitwidth; }
@@ -661,8 +660,6 @@ std::string Type::str() const {
     S += "float";
   else if (isBFloat16())
     S += "bfloat";
-  else if (isMFloat8())
-    S += "mfloat";
   else
     S += "int";
 
@@ -705,8 +702,6 @@ std::string Type::builtin_str() const {
   else if (isBFloat16()) {
     assert(ElementBitwidth == 16 && "BFloat16 can only be 16 bits");
     S += "y";
-  } else if (isMFloat8()) {
-    S += "c";
   } else
     switch (ElementBitwidth) {
     case 16: S += "h"; break;
@@ -759,11 +754,6 @@ unsigned Type::getNeonEnum() const {
   if (isFloating()) {
     assert(Addend != 0 && "Float8 doesn't exist!");
     Base = (unsigned)NeonTypeFlags::Float16 + (Addend - 1);
-  }
-
-  if (isMFloat8()) {
-    assert(Addend == 1 && "MFloat8 is only 8 bit");
-    Base = (unsigned)NeonTypeFlags::MFloat8;
   }
 
   if (isBFloat16()) {
@@ -1012,9 +1002,6 @@ std::string Intrinsic::getInstTypeCode(Type T, ClassKind CK) const {
   if (T.isBFloat16())
     return "bf16";
 
-  if (T.isMFloat8())
-    return "mfp8";
-
   if (T.isPoly())
     typeCode = 'p';
   else if (T.isInteger())
@@ -1052,7 +1039,7 @@ std::string Intrinsic::getBuiltinTypeStr() {
 
   Type RetT = getReturnType();
   if ((LocalCK == ClassI || LocalCK == ClassW) && RetT.isScalar() &&
-      !RetT.isFloating() && !RetT.isBFloat16() && !RetT.isMFloat8())
+      !RetT.isFloating() && !RetT.isBFloat16())
     RetT.makeInteger(RetT.getElementSizeInBits(), false);
 
   // Since the return value must be one type, return a vector type of the
@@ -2401,8 +2388,6 @@ void NeonEmitter::run(raw_ostream &OS) {
 
   OS << "#include <arm_bf16.h>\n";
 
-  OS << "#include <arm_mfp8.h>\n";
-
   OS << "#include <arm_vector_types.h>\n";
 
   // For now, signedness of polynomial types depends on target
@@ -2582,28 +2567,6 @@ void NeonEmitter::runFP16(raw_ostream &OS) {
   OS << "#endif /* __ARM_FP16_H */\n";
 }
 
-void NeonEmitter::runMFloat8(raw_ostream &OS) {
-  OS << "/*===---- arm_mfp8 - ARM vector type "
-        "------===\n"
-        " *\n"
-        " *\n"
-        " * Part of the LLVM Project, under the Apache License v2.0 with LLVM "
-        "Exceptions.\n"
-        " * See https://llvm.org/LICENSE.txt for license information.\n"
-        " * SPDX-License-Identifier: Apache-2.0 WITH LLVM-exception\n"
-        " *\n"
-        " *===-----------------------------------------------------------------"
-        "------===\n"
-        " */\n\n";
-  OS << "#if defined(__aarch64__)\n";
-  OS << "#ifndef __ARM_MFP8_H\n";
-  OS << "#define __ARM_MFP8_H\n\n";
-  OS << "typedef __MFloat8x8_t mfloat8x8_t;\n";
-  OS << "typedef __MFloat8x16_t mfloat8x16_t;\n";
-  OS << "#endif // __ARM_MFP8_H\n";
-  OS << "#endif //__aarch64__\n";
-}
-
 void NeonEmitter::runVectorTypes(raw_ostream &OS) {
   OS << "/*===---- arm_vector_types - ARM vector type "
         "------===\n"
@@ -2627,6 +2590,8 @@ void NeonEmitter::runVectorTypes(raw_ostream &OS) {
   OS << "typedef __fp16 float16_t;\n";
 
   OS << "#if defined(__aarch64__) || defined(__arm64ec__)\n";
+  OS << "typedef __MFloat8x8_t mfloat8x8_t;\n";
+  OS << "typedef __MFloat8x16_t mfloat8x16_t;\n";
   OS << "typedef double float64_t;\n";
   OS << "#endif\n\n";
 
@@ -2727,10 +2692,6 @@ void clang::EmitBF16(const RecordKeeper &Records, raw_ostream &OS) {
 
 void clang::EmitNeonSema(const RecordKeeper &Records, raw_ostream &OS) {
   NeonEmitter(Records).runHeader(OS);
-}
-
-void clang::EmitMFloat8(const RecordKeeper &Records, raw_ostream &OS) {
-  NeonEmitter(Records).runMFloat8(OS);
 }
 
 void clang::EmitVectorTypes(const RecordKeeper &Records, raw_ostream &OS) {

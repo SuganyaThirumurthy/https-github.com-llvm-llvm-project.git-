@@ -288,7 +288,7 @@ void Sema::inferLifetimeCaptureByAttribute(FunctionDecl *FD) {
   if (!FD)
     return;
   auto *MD = dyn_cast<CXXMethodDecl>(FD);
-  if (!MD || !MD->getIdentifier())
+  if (!MD || !MD->getIdentifier() || !MD->getParent()->isInStdNamespace())
     return;
   static const llvm::StringSet<> CapturingMethods{"insert", "push",
                                                   "push_front", "push_back"};

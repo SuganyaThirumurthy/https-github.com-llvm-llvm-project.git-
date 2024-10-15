@@ -169,7 +169,6 @@ public:
 
   bool hasBFloat16Type() const override;
 
-
   CallingConvCheckResult checkCallingConvention(CallingConv CC) const override;
 
   bool isCLZForZeroUndef() const override;

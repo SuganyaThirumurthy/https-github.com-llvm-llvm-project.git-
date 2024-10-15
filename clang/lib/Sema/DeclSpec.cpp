@@ -614,6 +614,7 @@ const char *DeclSpec::getSpecifierName(DeclSpec::TST T,
   case DeclSpec::TST_##Name:                                                   \
     return #Name;
 #include "clang/Basic/HLSLIntangibleTypes.def"
+  case DeclSpec::TST_error:       return "(error)";
   }
   llvm_unreachable("Unknown typespec!");
 }

@@ -273,8 +273,8 @@ void Sema::inferLifetimeBoundAttribute(FunctionDecl *FD) {
 
 static bool IsPointerLikeType(QualType QT) {
   QT = QT.getNonReferenceType();
-  if (QT->isPointerType())
-    return true;
+  // if (QT->isPointerType())
+  //   return true;
   auto *RD = QT->getAsCXXRecordDecl();
   if (!RD)
     return false;

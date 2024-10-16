@@ -294,6 +294,8 @@ InstructionCost VPRecipeBase::cost(ElementCount VF, VPCostContext &Ctx) {
     UI = IG->getInsertPos();
   else if (auto *WidenMem = dyn_cast<VPWidenMemoryRecipe>(this))
     UI = &WidenMem->getIngredient();
+  else if (auto *WidenCall = dyn_cast<VPWidenCallRecipe>(this))
+    UI = WidenCall->getUnderlyingCallInstruction();
 
   InstructionCost RecipeCost;
   if (UI && Ctx.skipCostComputation(UI, VF.isVector())) {
@@ -329,7 +331,7 @@ InstructionCost VPSingleDefRecipe::computeCost(ElementCount VF,
   return UI ? Ctx.getLegacyCost(UI, VF) : 0;
 }
 
-FastMathFlags VPRecipeWithIRFlags::getFastMathFlags() const {
+FastMathFlags VPRecipeIRFlags::getFastMathFlags() const {
   assert(OpType == OperationType::FPMathOp &&
          "recipe doesn't have fast math flags");
   FastMathFlags Res;
@@ -361,8 +363,8 @@ unsigned VPUnrollPartAccessor<PartOpIdx>::getUnrollPart(VPUser &U) const {
 VPInstruction::VPInstruction(unsigned Opcode, CmpInst::Predicate Pred,
                              VPValue *A, VPValue *B, DebugLoc DL,
                              const Twine &Name)
-    : VPRecipeWithIRFlags(VPDef::VPInstructionSC, ArrayRef<VPValue *>({A, B}),
-                          Pred, DL),
+    : VPSingleDefRecipeWithIRFlags(VPDef::VPInstructionSC,
+                                   ArrayRef<VPValue *>({A, B}), Pred, DL),
       Opcode(Opcode), Name(Name.str()) {
   assert(Opcode == Instruction::ICmp &&
          "only ICmp predicates supported at the moment");
@@ -371,7 +373,7 @@ VPInstruction::VPInstruction(unsigned Opcode, CmpInst::Predicate Pred,
 VPInstruction::VPInstruction(unsigned Opcode,
                              std::initializer_list<VPValue *> Operands,
                              FastMathFlags FMFs, DebugLoc DL, const Twine &Name)
-    : VPRecipeWithIRFlags(VPDef::VPInstructionSC, Operands, FMFs, DL),
+    : VPSingleDefRecipeWithIRFlags(VPDef::VPInstructionSC, Operands, FMFs, DL),
       Opcode(Opcode), Name(Name.str()) {
   // Make sure the VPInstruction is a floating-point operation.
   assert(isFPMathOp() && "this op can't take fast-math flags");
@@ -838,7 +840,10 @@ void VPInstruction::print(raw_ostream &O, const Twine &Indent,
   }
 
   printFlags(O);
-  printOperands(O, SlotTracker);
+  if (getNumOperands() > 0) {
+    O << " ";
+    printOperands(O, SlotTracker);
+  }
 
   if (auto DL = getDebugLoc()) {
     O << ", !dbg ";
@@ -912,7 +917,7 @@ void VPWidenCallRecipe::execute(VPTransformState &State) {
 
   assert(Variant != nullptr && "Can't create vector function.");
 
-  auto *CI = cast_or_null<CallInst>(getUnderlyingValue());
+  auto *CI = getUnderlyingCallInstruction();
   SmallVector<OperandBundleDef, 1> OpBundles;
   if (CI)
     CI->getOperandBundlesAsDefs(OpBundles);
@@ -920,8 +925,16 @@ void VPWidenCallRecipe::execute(VPTransformState &State) {
   CallInst *V = State.Builder.CreateCall(Variant, Args, OpBundles);
   setFlags(V);
 
-  if (!V->getType()->isVoidTy())
-    State.set(this, V);
+  if (!V->getType()->isVoidTy()) {
+    if (getNumDefinedValues() > 1) {
+      for (auto [I, Def] : enumerate(definedValues())) {
+        Value *AggV = State.Builder.CreateExtractValue(V, I);
+        State.set(Def, AggV);
+      }
+    } else {
+      State.set(getVPSingleValue(), V);
+    }
+  }
   State.addMetadata(V, CI);
 }
 
@@ -942,7 +955,9 @@ void VPWidenCallRecipe::print(raw_ostream &O, const Twine &Indent,
   if (CalledFn->getReturnType()->isVoidTy())
     O << "void ";
   else {
-    printAsOperand(O, SlotTracker);
+    interleaveComma(definedValues(), O, [&O, &SlotTracker](VPValue *Def) {
+      Def->printAsOperand(O, SlotTracker);
+    });
     O << " = ";
   }
 
@@ -1026,7 +1041,7 @@ InstructionCost VPWidenIntrinsicRecipe::computeCost(ElementCount VF,
     Arguments.push_back(V);
   }
 
-  Type *RetTy = ToVectorTy(Ctx.Types.inferScalarType(this), VF);
+  Type *RetTy = ToWideTy(Ctx.Types.inferScalarType(this), VF);
   SmallVector<Type *> ParamTys;
   for (unsigned I = 0; I != getNumOperands(); ++I)
     ParamTys.push_back(
@@ -1065,7 +1080,7 @@ void VPWidenIntrinsicRecipe::print(raw_ostream &O, const Twine &Indent,
 
   O << "call";
   printFlags(O);
-  O << getIntrinsicName() << "(";
+  O << " " << getIntrinsicName() << "(";
 
   interleaveComma(operands(), O, [&O, &SlotTracker](VPValue *Op) {
     Op->printAsOperand(O, SlotTracker);
@@ -1193,8 +1208,7 @@ void VPWidenSelectRecipe::execute(VPTransformState &State) {
   State.addMetadata(Sel, dyn_cast_or_null<Instruction>(getUnderlyingValue()));
 }
 
-VPRecipeWithIRFlags::FastMathFlagsTy::FastMathFlagsTy(
-    const FastMathFlags &FMF) {
+VPRecipeIRFlags::FastMathFlagsTy::FastMathFlagsTy(const FastMathFlags &FMF) {
   AllowReassoc = FMF.allowReassoc();
   NoNaNs = FMF.noNaNs();
   NoInfs = FMF.noInfs();
@@ -1205,7 +1219,7 @@ VPRecipeWithIRFlags::FastMathFlagsTy::FastMathFlagsTy(
 }
 
 #if !defined(NDEBUG) || defined(LLVM_ENABLE_DUMP)
-void VPRecipeWithIRFlags::printFlags(raw_ostream &O) const {
+void VPRecipeIRFlags::printFlags(raw_ostream &O) const {
   switch (OpType) {
   case OperationType::Cmp:
     O << " " << CmpInst::getPredicateName(getPredicate());
@@ -1238,8 +1252,6 @@ void VPRecipeWithIRFlags::printFlags(raw_ostream &O) const {
   case OperationType::Other:
     break;
   }
-  if (getNumOperands() > 0)
-    O << " ";
 }
 #endif
 
@@ -1446,7 +1458,10 @@ void VPWidenRecipe::print(raw_ostream &O, const Twine &Indent,
   printAsOperand(O, SlotTracker);
   O << " = " << Instruction::getOpcodeName(Opcode);
   printFlags(O);
-  printOperands(O, SlotTracker);
+  if (getNumOperands() > 0) {
+    O << " ";
+    printOperands(O, SlotTracker);
+  }
 }
 
 void VPWidenEVLRecipe::print(raw_ostream &O, const Twine &Indent,
@@ -1455,7 +1470,10 @@ void VPWidenEVLRecipe::print(raw_ostream &O, const Twine &Indent,
   printAsOperand(O, SlotTracker);
   O << " = vp." << Instruction::getOpcodeName(getOpcode());
   printFlags(O);
-  printOperands(O, SlotTracker);
+  if (getNumOperands() > 0) {
+    O << " ";
+    printOperands(O, SlotTracker);
+  }
 }
 #endif
 
@@ -1477,9 +1495,12 @@ void VPWidenCastRecipe::print(raw_ostream &O, const Twine &Indent,
                               VPSlotTracker &SlotTracker) const {
   O << Indent << "WIDEN-CAST ";
   printAsOperand(O, SlotTracker);
-  O << " = " << Instruction::getOpcodeName(Opcode) << " ";
+  O << " = " << Instruction::getOpcodeName(Opcode);
   printFlags(O);
-  printOperands(O, SlotTracker);
+  if (getNumOperands() > 0) {
+    O << " ";
+    printOperands(O, SlotTracker);
+  }
   O << " to " << *getResultType();
 }
 #endif
@@ -1863,6 +1884,7 @@ void VPWidenGEPRecipe::print(raw_ostream &O, const Twine &Indent,
   printAsOperand(O, SlotTracker);
   O << " = getelementptr";
   printFlags(O);
+  O << " ";
   printOperands(O, SlotTracker);
 }
 #endif
@@ -2186,7 +2208,7 @@ void VPReplicateRecipe::print(raw_ostream &O, const Twine &Indent,
   if (auto *CB = dyn_cast<CallBase>(getUnderlyingInstr())) {
     O << "call";
     printFlags(O);
-    O << "@" << CB->getCalledFunction()->getName() << "(";
+    O << " @" << CB->getCalledFunction()->getName() << "(";
     interleaveComma(make_range(op_begin(), op_begin() + (getNumOperands() - 1)),
                     O, [&O, &SlotTracker](VPValue *Op) {
                       Op->printAsOperand(O, SlotTracker);
@@ -2195,7 +2217,10 @@ void VPReplicateRecipe::print(raw_ostream &O, const Twine &Indent,
   } else {
     O << Instruction::getOpcodeName(getUnderlyingInstr()->getOpcode());
     printFlags(O);
-    printOperands(O, SlotTracker);
+    if (getNumOperands() > 0) {
+      O << " ";
+      printOperands(O, SlotTracker);
+    }
   }
 
   if (shouldPack())

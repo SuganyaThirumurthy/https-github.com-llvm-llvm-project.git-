@@ -878,10 +878,13 @@ void use() {
 }
 
 class [[gsl::Pointer()]] my_string_view : public std::string_view {};
+class my_string_view_not_pointer : public std::string_view {};
 std::optional<std::string_view> getOptionalSV();
 std::optional<std::string> getOptionalS();
 std::optional<my_string_view> getOptionalMySV();
+std::optional<my_string_view_not_pointer> getOptionalMySVNotP();
 my_string_view getMySV();
+my_string_view_not_pointer getMySVNotP();
 
 // Infer attribute in STL container of pointers.
 void container_of_pointers() {
@@ -905,7 +908,27 @@ void container_of_pointers() {
   vsv.push_back(getOptionalS().value()); // expected-warning {{object captured by 'vsv'}}
   vsv.push_back(getOptionalSV().value());
   vsv.push_back(getOptionalMySV().value());
+  // FIXME: We should not diagnose the following case.
+  vsv.push_back(getOptionalMySVNotP().value()); // expected-warning {{object captured by 'vsv'}}
   vsv.push_back(getMySV());
+  vsv.push_back(getMySVNotP());
+  vsv.push_back(my_string_view{});
+  vsv.push_back(my_string_view_not_pointer{});
+}
+
+template<class T>
+struct MySet {
+void insert(T&& t [[clang::lifetime_capture_by(this)]]);
+void insert(const T& t [[clang::lifetime_capture_by(this)]]);
+};
+
+void user_defined_containers() {
+  // FIXME: We want this to diagnose 'set_of_sv' but not 'set_of_int' case.
+  // Currently, we cannot selectively trigger for pointer-like types and not for other value-types.
+  MySet<int> set_of_int;
+  set_of_int.insert(1); // expected-warning {{object captured by 'set_of_int' will be destroyed}}
+  MySet<std::string_view> set_of_sv;
+  set_of_sv.insert(std::string());  // expected-warning {{object captured by 'set_of_sv' will be destroyed}}
 }
 } // namespace lifetime_capture_by
 

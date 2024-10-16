@@ -518,6 +518,10 @@ Bug Fixes to C++ Support
 - Fix erroneous templated array size calculation leading to crashes in generated code. (#GH41441)
 - During the lookup for a base class name, non-type names are ignored. (#GH16855)
 
+- Emit an error when the same identifier appears with both internal and
+  external linkage in a translation unit Fixes:
+  (`#54215 <https://github.com/llvm/llvm-project/issues/54215>`_)
+
 Bug Fixes to AST Handling
 ^^^^^^^^^^^^^^^^^^^^^^^^^
 

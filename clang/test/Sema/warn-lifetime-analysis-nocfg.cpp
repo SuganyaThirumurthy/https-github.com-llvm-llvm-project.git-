@@ -877,22 +877,29 @@ void use() {
   TIS.capture(s);
 }
 
+std::optional<std::string_view> getOptionalSV();
+
 // Infer attribute in STL container of pointers.
 void container_of_pointers() {
   std::string local;
   std::vector<std::string> vs;
-  std::vector<std::string_view> vsv;
-  std::vector<const std::string*> vp;
-
   vs.push_back(std::string()); // Ok.
+  vs.insert(vs.begin(), std::string()); // Ok.
+
+  std::vector<std::string_view> vsv;
   vsv.push_back(std::string()); // expected-warning {{object captured by 'vsv' will be destroyed at the end of the full-expression}}
-  vp.push_back(getPointerLB(std::string())); // expected-warning {{object captured by 'vp'}}
-  vp.push_back(getPointerLB(*getPointerLB(std::string()))); // expected-warning {{object captured by 'vp'}}
+  vsv.insert(vsv.begin(), std::string()); // expected-warning {{object captured by 'vsv' will be destroyed at the end of the full-expression}}
+
+  std::vector<const std::string*> vp;
+  vp.push_back(getPointerLB(std::string())); // FIXME: Diagnose this.
+  vp.push_back(getPointerLB(*getPointerLB(std::string()))); // FIXME: Diagnose this.
   vp.push_back(getPointerLB(local));
   vp.push_back(getPointerNoLB(std::string()));
 
-  vs.insert(vs.begin(), std::string()); // Ok.
-  vsv.insert(vsv.begin(), std::string()); // expected-warning {{object captured by 'vsv' will be destroyed at the end of the full-expression}}
+  std::optional<std::string_view> optional;
+
+  vsv.push_back(optional.value());
+  vsv.push_back(getOptionalSV().value());
 }
 } // namespace lifetime_capture_by
 

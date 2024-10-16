@@ -458,9 +458,9 @@ public:
   bool operator==(const SDNodeFlags &Other) const {
     return NoUnsignedWrap == Other.NoUnsignedWrap &&
            NoSignedWrap == Other.NoSignedWrap && Exact == Other.Exact &&
-           Disjoint == Other.Disjoint && NonNeg == Other.NonNeg &&
-           NoNaNs == Other.NoNaNs && NoInfs == Other.NoInfs &&
-           NoSignedZeros == Other.NoSignedZeros &&
+           Disjoint == Other.Disjoint && SameSign == Other.SameSign &&
+           NonNeg == Other.NonNeg && NoNaNs == Other.NoNaNs &&
+           NoInfs == Other.NoInfs && NoSignedZeros == Other.NoSignedZeros &&
            AllowReciprocal == Other.AllowReciprocal &&
            AllowContract == Other.AllowContract &&
            ApproximateFuncs == Other.ApproximateFuncs &&

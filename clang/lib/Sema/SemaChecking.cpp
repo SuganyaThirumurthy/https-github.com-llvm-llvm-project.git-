@@ -5667,9 +5667,8 @@ ExprResult Sema::BuiltinCountedByRef(ExprResult TheCallResult) {
         }
 
         return ExprResult(UnaryOperator::Create(
-            Context, New, UO_AddrOf,
-            Context.getPointerType(CountFD->getType()), VK_LValue,
-            OK_Ordinary, Loc, false, FPOptionsOverride()));
+            Context, New, UO_AddrOf, Context.getPointerType(CountFD->getType()),
+            VK_LValue, OK_Ordinary, Loc, false, FPOptionsOverride()));
       }
     }
   } else {

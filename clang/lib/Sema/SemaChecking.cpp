@@ -3242,7 +3242,7 @@ void Sema::checkLifetimeCaptureBy(FunctionDecl *FD, bool IsMemberFunction,
       Expr *Capturing = GetArgAt(CapturingParamIdx);
       Expr *Captured = GetArgAt(I + IsMemberFunction);
       CapturingEntity CE{Capturing};
-      // Ensure that 'Captured' lives atleast as long as the 'Capturing' entity.
+      // Ensure that 'Captured' outlives the 'Capturing' entity.
       checkCaptureLifetime(*this, CE, Captured);
     }
   }

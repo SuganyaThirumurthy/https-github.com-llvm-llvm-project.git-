@@ -901,7 +901,6 @@ void container_of_pointers() {
   vp.push_back(getPointerNoLB(std::string()));
 
   std::optional<std::string_view> optional;
-
   vsv.push_back(optional.value());
   vsv.push_back(getOptionalS().value()); // expected-warning {{object captured by 'vsv'}}
   vsv.push_back(getOptionalSV().value());

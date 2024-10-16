@@ -76,6 +76,9 @@ Code actions
 
 - Added `Swap operands` tweak for certain binary operators.
 
+- The abbreviate function template tweak was introduced.
+  It allows converting function templates to their abbreviated form using auto parameters.
+
 Signature help
 ^^^^^^^^^^^^^^
 

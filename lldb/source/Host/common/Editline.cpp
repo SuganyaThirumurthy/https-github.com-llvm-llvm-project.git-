@@ -724,8 +724,7 @@ unsigned char Editline::EndOrAddLineCommand(int ch) {
       m_input_lines.clear();
       for (unsigned index = 0; index < lines.GetSize(); index++) {
 #if LLDB_EDITLINE_USE_WCHAR
-        m_input_lines.insert(m_input_lines.end(),
-                             FromBytes(lines[index]));
+        m_input_lines.insert(m_input_lines.end(), FromBytes(lines[index]));
 #else
         m_input_lines.insert(m_input_lines.end(), lines[index]);
 #endif
@@ -1615,7 +1614,8 @@ bool Editline::CompleteCharacter(char ch, EditLineGetCharType &out) {
   return true;
 #else
   std::locale locale("C.UTF-8");
-  const auto &cvt = std::use_facet<std::codecvt<wchar_t, char, std::mbstate_t>>(locale);
+  const auto &cvt =
+      std::use_facet<std::codecvt<wchar_t, char, std::mbstate_t>>(locale);
   llvm::SmallString<4> input;
   for (;;) {
     const char *from_next;

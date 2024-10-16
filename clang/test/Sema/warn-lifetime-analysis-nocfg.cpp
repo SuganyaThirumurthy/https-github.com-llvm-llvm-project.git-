@@ -866,7 +866,7 @@ void use() {
   captureRValS(std::string(), s); // expected-warning {{object captured by 's'}}
 
   // Member functions.
-  s.captureInt(1); // expected-warning {{object captured by 's' will be destroyed at the end of the full-expression}}
+  s.captureInt(1); // expected-warning {{object captured by 's'}}
   s.captureSV(std::string()); // expected-warning {{object captured by 's'}}
   s.captureSV(substr(std::string())); // expected-warning {{object captured by 's'}}
   s.captureSV(strcopy(std::string()));
@@ -877,7 +877,11 @@ void use() {
   TIS.capture(s);
 }
 
+class [[gsl::Pointer()]] my_string_view : public std::string_view {};
 std::optional<std::string_view> getOptionalSV();
+std::optional<std::string> getOptionalS();
+std::optional<my_string_view> getOptionalMySV();
+my_string_view getMySV();
 
 // Infer attribute in STL container of pointers.
 void container_of_pointers() {
@@ -887,8 +891,8 @@ void container_of_pointers() {
   vs.insert(vs.begin(), std::string()); // Ok.
 
   std::vector<std::string_view> vsv;
-  vsv.push_back(std::string()); // expected-warning {{object captured by 'vsv' will be destroyed at the end of the full-expression}}
-  vsv.insert(vsv.begin(), std::string()); // expected-warning {{object captured by 'vsv' will be destroyed at the end of the full-expression}}
+  vsv.push_back(std::string()); // expected-warning {{object captured by 'vsv'}}
+  vsv.insert(vsv.begin(), std::string()); // expected-warning {{object captured by 'vsv'}}
 
   std::vector<const std::string*> vp;
   vp.push_back(getPointerLB(std::string())); // FIXME: Diagnose this.
@@ -899,7 +903,10 @@ void container_of_pointers() {
   std::optional<std::string_view> optional;
 
   vsv.push_back(optional.value());
+  vsv.push_back(getOptionalS().value()); // expected-warning {{object captured by 'vsv'}}
   vsv.push_back(getOptionalSV().value());
+  vsv.push_back(getOptionalMySV().value());
+  vsv.push_back(getMySV());
 }
 } // namespace lifetime_capture_by
 

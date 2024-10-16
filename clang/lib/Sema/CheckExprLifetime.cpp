@@ -7,6 +7,7 @@
 //===----------------------------------------------------------------------===//
 
 #include "CheckExprLifetime.h"
+#include "clang/AST/Attrs.inc"
 #include "clang/AST/Decl.h"
 #include "clang/AST/DeclCXX.h"
 #include "clang/AST/DeclTemplate.h"
@@ -1415,19 +1416,22 @@ static void checkExprLifetimeImpl(Sema &SemaRef,
     return false;
   };
 
+  bool HasReferenceBinding = Init->isGLValue();
   llvm::SmallVector<IndirectLocalPathEntry, 8> Path;
   if (LK == LK_Assignment && shouldRunGSLAssignmentAnalysis(SemaRef, *CEntity))
     Path.push_back({IndirectLocalPathEntry::GslPointerAssignment, Init});
   else if (LK == LK_LifetimeCapture) {
+    Path.push_back({IndirectLocalPathEntry::LifetimeCapture, Init});
+    if (isRecordWithAttr<PointerAttr>(Init->getType()))
+      HasReferenceBinding = false;
     // Skip the top MaterializeTemoraryExpr if it is temporary object of the
     // pointer-like type itself.
     if (auto *MTE = dyn_cast<MaterializeTemporaryExpr>(Init);
         MTE && isPointerLikeType(Init->getType()))
       Init = MTE->getSubExpr();
-    Path.push_back({IndirectLocalPathEntry::LifetimeCapture, Init});
   }
 
-  if (Init->isGLValue())
+  if (HasReferenceBinding)
     visitLocalsRetainedByReferenceBinding(Path, Init, RK_ReferenceBinding,
                                           TemporaryVisitor);
   else

@@ -100,7 +100,7 @@ func.func @dead_code() {
 // Make sure not crash.
 // CHECK-LABEL: @no_integer_or_index
 func.func @no_integer_or_index() { 
-  // CHECK: arith.cmpi
+  // CHECK: arith.constant dense<false> : vector<1xi1>
   %cst_0 = arith.constant dense<[0]> : vector<1xi32> 
   %cmp = arith.cmpi slt, %cst_0, %cst_0 : vector<1xi32> 
   return

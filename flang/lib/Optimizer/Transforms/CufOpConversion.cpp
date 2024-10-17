@@ -1,4 +1,4 @@
-//===-- CufOpConversion.cpp -----------------------------------------------===//
+//===-- lib/Optimizer/Transforms/CufOpConversion.cpp ------------*- C++ -*-===//
 //
 // Part of the LLVM Project, under the Apache License v2.0 with LLVM Exceptions.
 // See https://llvm.org/LICENSE.txt for license information.
@@ -6,7 +6,6 @@
 //
 //===----------------------------------------------------------------------===//
 
-#include "flang/Common/Fortran.h"
 #include "flang/Optimizer/Builder/Runtime/RTBuilder.h"
 #include "flang/Optimizer/CodeGen/TypeConverter.h"
 #include "flang/Optimizer/Dialect/CUF/CUFOps.h"
@@ -16,6 +15,7 @@
 #include "flang/Optimizer/Support/DataLayout.h"
 #include "flang/Runtime/CUDA/descriptor.h"
 #include "flang/Runtime/allocatable.h"
+#include "flang/Support/Fortran.h"
 #include "mlir/Pass/Pass.h"
 #include "mlir/Transforms/DialectConversion.h"
 #include "mlir/Transforms/GreedyPatternRewriteDriver.h"

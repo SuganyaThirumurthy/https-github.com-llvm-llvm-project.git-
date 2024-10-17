@@ -2526,7 +2526,7 @@ void LLVMFuncOp::build(OpBuilder &builder, OperationState &result,
   assert(llvm::cast<LLVMFunctionType>(type).getNumParams() == argAttrs.size() &&
          "expected as many argument attribute lists as arguments");
   function_interface_impl::addArgAndResultAttrs(
-      builder, result, argAttrs, /*resultAttrs=*/std::nullopt,
+      builder, result, argAttrs, /*resultAttrs=*/{},
       getArgAttrsAttrName(result.name), getResAttrsAttrName(result.name));
 }
 

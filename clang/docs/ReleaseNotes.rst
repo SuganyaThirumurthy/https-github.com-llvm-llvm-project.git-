@@ -702,6 +702,8 @@ clang-format
 - Adds ``IndentOnly`` suboption to ``ReflowComments`` to fix the indentation of multi-line comments
   without touching their contents, renames ``false`` to ``Never``, and ``true`` to ``Always``.
 
+- Adds ``AllowShortNamespacesOnASingleLine`` option.
+
 libclang
 --------
 - Add ``clang_isBeforeInTranslationUnit``. Given two source locations, it determines

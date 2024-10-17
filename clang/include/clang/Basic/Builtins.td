@@ -4907,3 +4907,9 @@ def ArithmeticFence : LangBuiltin<"ALL_LANGUAGES"> {
   let Attributes = [CustomTypeChecking, Constexpr];
   let Prototype = "void(...)";
 }
+
+def CountedByRef : Builtin {
+  let Spellings = ["__builtin_counted_by_ref"];
+  let Attributes = [NoThrow, CustomTypeChecking];
+  let Prototype = "int(...)";
+}

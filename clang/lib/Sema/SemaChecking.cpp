@@ -32,6 +32,7 @@
 #include "clang/AST/NonTrivialTypeVisitor.h"
 #include "clang/AST/OperationKinds.h"
 #include "clang/AST/RecordLayout.h"
+#include "clang/AST/RecursiveASTVisitor.h"
 #include "clang/AST/Stmt.h"
 #include "clang/AST/TemplateBase.h"
 #include "clang/AST/Type.h"
@@ -2971,6 +2972,8 @@ Sema::CheckBuiltinFunctionCall(FunctionDecl *FDecl, unsigned BuiltinID,
     }
     break;
   }
+  case Builtin::BI__builtin_counted_by_ref:
+    return BuiltinCountedByRef(TheCall);
   }
 
   if (getLangOpts().HLSL && HLSL().CheckBuiltinFunctionCall(BuiltinID, TheCall))
@@ -5571,6 +5574,118 @@ bool Sema::BuiltinSetjmp(CallExpr *TheCall) {
     return Diag(TheCall->getBeginLoc(), diag::err_builtin_setjmp_unsupported)
            << SourceRange(TheCall->getBeginLoc(), TheCall->getEndLoc());
   return false;
+}
+
+ExprResult Sema::BuiltinCountedByRef(ExprResult TheCallResult) {
+  CallExpr *TheCall = cast<CallExpr>(TheCallResult.get());
+
+  if (checkArgCount(TheCall, 1))
+    return ExprError();
+
+  ExprResult ArgRes = UsualUnaryConversions(TheCall->getArg(0));
+  if (ArgRes.isInvalid())
+    return ExprError();
+
+  // For simplicity, we support only limited expressions for the argument.
+  // Specifically 'ptr->array' and '&ptr->array[0]'. This allows us to reject
+  // arguments with complex casting, which really shouldn't be a huge problem.
+  const Expr *Arg = ArgRes.get()->IgnoreParenImpCasts();
+  if (!isa<PointerType>(Arg->getType()) && !Arg->getType()->isArrayType())
+    return Diag(Arg->getBeginLoc(),
+                diag::err_builtin_counted_by_ref_must_be_flex_array_member)
+           << Arg->getSourceRange();
+
+  if (Arg->HasSideEffects(Context))
+    Diag(Arg->getBeginLoc(), diag::warn_builtin_counted_by_ref_has_side_effects)
+        << Arg->getSourceRange();
+
+  // See if we have something like '&ptr->fam[0]`.
+  if (auto *UO = dyn_cast<UnaryOperator>(Arg);
+      UO && UO->getOpcode() == UO_AddrOf) {
+    Arg = UO->getSubExpr()->IgnoreParenImpCasts();
+
+    if (auto *ASE = dyn_cast<ArraySubscriptExpr>(Arg))
+      Arg = ASE->getBase()->IgnoreParenImpCasts();
+  }
+
+  if (const MemberExpr *ME = dyn_cast<MemberExpr>(Arg)) {
+    if (!ME->isFlexibleArrayMemberLike(
+            Context, getLangOpts().getStrictFlexArraysLevel()))
+      return Diag(Arg->getBeginLoc(),
+                  diag::err_builtin_counted_by_ref_must_be_flex_array_member)
+             << Arg->getSourceRange();
+
+    if (auto *CATy =
+            ME->getMemberDecl()->getType()->getAs<CountAttributedType>();
+        CATy && CATy->getKind() == CountAttributedType::CountedBy) {
+      if (FieldDecl *FAMDecl = dyn_cast<FieldDecl>(ME->getMemberDecl())) {
+        FieldDecl *CountFD = FAMDecl->findCountedByField();
+        assert(CountFD && "'count' field couldn't be found");
+
+        // Reverse through any anonymous structs / unions surrounding the
+        // flexible array member. We'll build any necessary MemberExpr's to
+        // anonymous structs / unions when building a reference to the
+        // 'count' field.
+        RecordDecl *RD = FAMDecl->getParent();
+        DeclContext *DC = RD;
+        for (; DC->isRecord(); DC = DC->getLexicalParent()) {
+          if (!RD->isAnonymousStructOrUnion())
+            break;
+          RD = cast<RecordDecl>(DC);
+          if (auto *Base = dyn_cast<MemberExpr>(ME->getBase()))
+            ME = Base;
+        }
+
+        // See if the count's FieldDecl is within anonymous structs.
+        SmallVector<NamedDecl *, 2> PathToFD;
+        for (Decl *D : RD->decls()) {
+          if (auto *IFD = dyn_cast<IndirectFieldDecl>(D);
+              IFD && IFD->getAnonField() == CountFD) {
+            PathToFD.insert(PathToFD.begin(), IFD->chain_begin(),
+                            IFD->chain_end());
+            break;
+          }
+        }
+
+        if (PathToFD.empty())
+          PathToFD.push_back(CountFD);
+
+        // Build a MemberExpr to the 'count' field. This accounts for any
+        // anonymous structs / unions that may contain the field. Use the
+        // CallExpr's SourceLocation for future diagnostics.
+        SourceLocation Loc = TheCall->getBeginLoc();
+        bool isArrow = ME->isArrow();
+        Expr *New = ME->getBase();
+        for (NamedDecl *ND : PathToFD) {
+          ValueDecl *VD = cast<ValueDecl>(ND);
+          auto *ME = MemberExpr::CreateImplicit(Context, New, isArrow, VD,
+                                                VD->getType(), VK_PRValue,
+                                                OK_Ordinary);
+          ME->setMemberLoc(Loc);
+          New = ME;
+          isArrow = false;
+        }
+
+        return ExprResult(UnaryOperator::Create(
+            Context, New, UO_AddrOf, Context.getPointerType(CountFD->getType()),
+            VK_LValue, OK_Ordinary, Loc, false, FPOptionsOverride()));
+      }
+    }
+  } else {
+    return Diag(Arg->getBeginLoc(),
+                diag::err_builtin_counted_by_ref_must_be_flex_array_member)
+           << Arg->getSourceRange();
+  }
+
+  QualType SizeTypePtrTy = Context.VoidPtrTy;
+  QualType NullPtrTy =
+      Context.getIntTypeForBitwidth(Context.getIntWidth(SizeTypePtrTy), true);
+
+  return ExprResult(ImplicitCastExpr::Create(
+      Context, SizeTypePtrTy, CK_IntegralToPointer,
+      IntegerLiteral::Create(Context, Context.MakeIntValue(0, NullPtrTy),
+                             NullPtrTy, SourceLocation()),
+      nullptr, VK_LValue, FPOptionsOverride()));
 }
 
 namespace {

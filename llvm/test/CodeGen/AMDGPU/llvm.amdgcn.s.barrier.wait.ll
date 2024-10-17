@@ -5,7 +5,7 @@
 define amdgpu_kernel void @test1_s_barrier_signal(ptr addrspace(1) %out) #0 {
 ; GFX12-SDAG-LABEL: test1_s_barrier_signal:
 ; GFX12-SDAG:       ; %bb.0: ; %entry
-; GFX12-SDAG-NEXT:    s_load_b64 s[0:1], s[2:3], 0x24
+; GFX12-SDAG-NEXT:    s_load_b64 s[0:1], s[4:5], 0x24
 ; GFX12-SDAG-NEXT:    v_and_b32_e32 v0, 0x3ff, v0
 ; GFX12-SDAG-NEXT:    s_delay_alu instid0(VALU_DEP_1) | instskip(SKIP_1) | instid1(VALU_DEP_1)
 ; GFX12-SDAG-NEXT:    v_dual_mov_b32 v2, 0 :: v_dual_lshlrev_b32 v3, 2, v0
@@ -23,7 +23,7 @@ define amdgpu_kernel void @test1_s_barrier_signal(ptr addrspace(1) %out) #0 {
 ;
 ; GFX12-GISEL-LABEL: test1_s_barrier_signal:
 ; GFX12-GISEL:       ; %bb.0: ; %entry
-; GFX12-GISEL-NEXT:    s_load_b64 s[0:1], s[2:3], 0x24
+; GFX12-GISEL-NEXT:    s_load_b64 s[0:1], s[4:5], 0x24
 ; GFX12-GISEL-NEXT:    v_and_b32_e32 v0, 0x3ff, v0
 ; GFX12-GISEL-NEXT:    s_delay_alu instid0(VALU_DEP_1) | instskip(SKIP_1) | instid1(VALU_DEP_1)
 ; GFX12-GISEL-NEXT:    v_dual_mov_b32 v2, 0 :: v_dual_lshlrev_b32 v3, 2, v0
@@ -53,7 +53,7 @@ entry:
 define amdgpu_kernel void @test2_s_barrier_signal(ptr addrspace(1) %out) #0 {
 ; GFX12-SDAG-LABEL: test2_s_barrier_signal:
 ; GFX12-SDAG:       ; %bb.0: ; %entry
-; GFX12-SDAG-NEXT:    s_load_b64 s[0:1], s[2:3], 0x24
+; GFX12-SDAG-NEXT:    s_load_b64 s[0:1], s[4:5], 0x24
 ; GFX12-SDAG-NEXT:    v_and_b32_e32 v0, 0x3ff, v0
 ; GFX12-SDAG-NEXT:    s_delay_alu instid0(VALU_DEP_1) | instskip(SKIP_1) | instid1(VALU_DEP_1)
 ; GFX12-SDAG-NEXT:    v_dual_mov_b32 v2, 0 :: v_dual_lshlrev_b32 v3, 2, v0
@@ -71,7 +71,7 @@ define amdgpu_kernel void @test2_s_barrier_signal(ptr addrspace(1) %out) #0 {
 ;
 ; GFX12-GISEL-LABEL: test2_s_barrier_signal:
 ; GFX12-GISEL:       ; %bb.0: ; %entry
-; GFX12-GISEL-NEXT:    s_load_b64 s[0:1], s[2:3], 0x24
+; GFX12-GISEL-NEXT:    s_load_b64 s[0:1], s[4:5], 0x24
 ; GFX12-GISEL-NEXT:    v_and_b32_e32 v0, 0x3ff, v0
 ; GFX12-GISEL-NEXT:    s_delay_alu instid0(VALU_DEP_1) | instskip(SKIP_1) | instid1(VALU_DEP_1)
 ; GFX12-GISEL-NEXT:    v_dual_mov_b32 v2, 0 :: v_dual_lshlrev_b32 v3, 2, v0
@@ -101,7 +101,7 @@ entry:
 define amdgpu_kernel void @test3_s_barrier_signal(ptr addrspace(1) %out) #0 {
 ; GFX12-SDAG-LABEL: test3_s_barrier_signal:
 ; GFX12-SDAG:       ; %bb.0: ; %entry
-; GFX12-SDAG-NEXT:    s_load_b64 s[0:1], s[2:3], 0x24
+; GFX12-SDAG-NEXT:    s_load_b64 s[0:1], s[4:5], 0x24
 ; GFX12-SDAG-NEXT:    v_and_b32_e32 v0, 0x3ff, v0
 ; GFX12-SDAG-NEXT:    s_delay_alu instid0(VALU_DEP_1) | instskip(SKIP_1) | instid1(VALU_DEP_1)
 ; GFX12-SDAG-NEXT:    v_dual_mov_b32 v2, 0 :: v_dual_lshlrev_b32 v3, 2, v0
@@ -119,7 +119,7 @@ define amdgpu_kernel void @test3_s_barrier_signal(ptr addrspace(1) %out) #0 {
 ;
 ; GFX12-GISEL-LABEL: test3_s_barrier_signal:
 ; GFX12-GISEL:       ; %bb.0: ; %entry
-; GFX12-GISEL-NEXT:    s_load_b64 s[0:1], s[2:3], 0x24
+; GFX12-GISEL-NEXT:    s_load_b64 s[0:1], s[4:5], 0x24
 ; GFX12-GISEL-NEXT:    v_and_b32_e32 v0, 0x3ff, v0
 ; GFX12-GISEL-NEXT:    s_delay_alu instid0(VALU_DEP_1) | instskip(SKIP_1) | instid1(VALU_DEP_1)
 ; GFX12-GISEL-NEXT:    v_dual_mov_b32 v2, 0 :: v_dual_lshlrev_b32 v3, 2, v0
@@ -149,7 +149,7 @@ entry:
 define amdgpu_kernel void @test1_s_barrier_signal_var(ptr addrspace(1) %out) #0 {
 ; GFX12-SDAG-LABEL: test1_s_barrier_signal_var:
 ; GFX12-SDAG:       ; %bb.0: ; %entry
-; GFX12-SDAG-NEXT:    s_load_b64 s[0:1], s[2:3], 0x24
+; GFX12-SDAG-NEXT:    s_load_b64 s[0:1], s[4:5], 0x24
 ; GFX12-SDAG-NEXT:    v_dual_mov_b32 v1, 0 :: v_dual_and_b32 v0, 0x3ff, v0
 ; GFX12-SDAG-NEXT:    s_mov_b32 m0, 1
 ; GFX12-SDAG-NEXT:    s_delay_alu instid0(VALU_DEP_1) | instskip(SKIP_1) | instid1(VALU_DEP_2)
@@ -168,7 +168,7 @@ define amdgpu_kernel void @test1_s_barrier_signal_var(ptr addrspace(1) %out) #0 
 ;
 ; GFX12-GISEL-LABEL: test1_s_barrier_signal_var:
 ; GFX12-GISEL:       ; %bb.0: ; %entry
-; GFX12-GISEL-NEXT:    s_load_b64 s[0:1], s[2:3], 0x24
+; GFX12-GISEL-NEXT:    s_load_b64 s[0:1], s[4:5], 0x24
 ; GFX12-GISEL-NEXT:    v_and_b32_e32 v0, 0x3ff, v0
 ; GFX12-GISEL-NEXT:    v_mov_b32_e32 v2, 0
 ; GFX12-GISEL-NEXT:    s_mov_b32 m0, 1
@@ -231,7 +231,7 @@ define void @test2_s_barrier_signal_var(i32 %arg) {
 define amdgpu_kernel void @test1_s_barrier_signal_isfirst(ptr addrspace(1) %a, ptr addrspace(1) %b, ptr addrspace(1) %c, ptr addrspace(1) %out) #0 {
 ; GFX12-SDAG-LABEL: test1_s_barrier_signal_isfirst:
 ; GFX12-SDAG:       ; %bb.0: ; %entry
-; GFX12-SDAG-NEXT:    s_load_b256 s[0:7], s[2:3], 0x24
+; GFX12-SDAG-NEXT:    s_load_b256 s[0:7], s[4:5], 0x24
 ; GFX12-SDAG-NEXT:    v_dual_mov_b32 v1, 0 :: v_dual_and_b32 v0, 0x3ff, v0
 ; GFX12-SDAG-NEXT:    s_delay_alu instid0(VALU_DEP_1)
 ; GFX12-SDAG-NEXT:    v_lshlrev_b32_e32 v0, 2, v0
@@ -253,7 +253,7 @@ define amdgpu_kernel void @test1_s_barrier_signal_isfirst(ptr addrspace(1) %a, p
 ;
 ; GFX12-GISEL-LABEL: test1_s_barrier_signal_isfirst:
 ; GFX12-GISEL:       ; %bb.0: ; %entry
-; GFX12-GISEL-NEXT:    s_load_b256 s[0:7], s[2:3], 0x24
+; GFX12-GISEL-NEXT:    s_load_b256 s[0:7], s[4:5], 0x24
 ; GFX12-GISEL-NEXT:    v_dual_mov_b32 v1, 0 :: v_dual_and_b32 v0, 0x3ff, v0
 ; GFX12-GISEL-NEXT:    s_delay_alu instid0(VALU_DEP_1)
 ; GFX12-GISEL-NEXT:    v_lshlrev_b32_e32 v0, 2, v0
@@ -291,7 +291,7 @@ entry:
 define amdgpu_kernel void @test2_s_barrier_signal_isfirst(ptr addrspace(1) %a, ptr addrspace(1) %b, ptr addrspace(1) %c, ptr addrspace(1) %out) #0 {
 ; GFX12-SDAG-LABEL: test2_s_barrier_signal_isfirst:
 ; GFX12-SDAG:       ; %bb.0: ; %entry
-; GFX12-SDAG-NEXT:    s_load_b256 s[0:7], s[2:3], 0x24
+; GFX12-SDAG-NEXT:    s_load_b256 s[0:7], s[4:5], 0x24
 ; GFX12-SDAG-NEXT:    v_dual_mov_b32 v1, 0 :: v_dual_and_b32 v0, 0x3ff, v0
 ; GFX12-SDAG-NEXT:    s_delay_alu instid0(VALU_DEP_1)
 ; GFX12-SDAG-NEXT:    v_lshlrev_b32_e32 v0, 2, v0
@@ -313,7 +313,7 @@ define amdgpu_kernel void @test2_s_barrier_signal_isfirst(ptr addrspace(1) %a, p
 ;
 ; GFX12-GISEL-LABEL: test2_s_barrier_signal_isfirst:
 ; GFX12-GISEL:       ; %bb.0: ; %entry
-; GFX12-GISEL-NEXT:    s_load_b256 s[0:7], s[2:3], 0x24
+; GFX12-GISEL-NEXT:    s_load_b256 s[0:7], s[4:5], 0x24
 ; GFX12-GISEL-NEXT:    v_dual_mov_b32 v1, 0 :: v_dual_and_b32 v0, 0x3ff, v0
 ; GFX12-GISEL-NEXT:    s_delay_alu instid0(VALU_DEP_1)
 ; GFX12-GISEL-NEXT:    v_lshlrev_b32_e32 v0, 2, v0
@@ -351,7 +351,7 @@ entry:
 define amdgpu_kernel void @test3_s_barrier_signal_isfirst(ptr addrspace(1) %a, ptr addrspace(1) %b, ptr addrspace(1) %c, ptr addrspace(1) %out) #0 {
 ; GFX12-SDAG-LABEL: test3_s_barrier_signal_isfirst:
 ; GFX12-SDAG:       ; %bb.0: ; %entry
-; GFX12-SDAG-NEXT:    s_load_b256 s[0:7], s[2:3], 0x24
+; GFX12-SDAG-NEXT:    s_load_b256 s[0:7], s[4:5], 0x24
 ; GFX12-SDAG-NEXT:    v_dual_mov_b32 v1, 0 :: v_dual_and_b32 v0, 0x3ff, v0
 ; GFX12-SDAG-NEXT:    s_delay_alu instid0(VALU_DEP_1)
 ; GFX12-SDAG-NEXT:    v_lshlrev_b32_e32 v0, 2, v0
@@ -373,7 +373,7 @@ define amdgpu_kernel void @test3_s_barrier_signal_isfirst(ptr addrspace(1) %a, p
 ;
 ; GFX12-GISEL-LABEL: test3_s_barrier_signal_isfirst:
 ; GFX12-GISEL:       ; %bb.0: ; %entry
-; GFX12-GISEL-NEXT:    s_load_b256 s[0:7], s[2:3], 0x24
+; GFX12-GISEL-NEXT:    s_load_b256 s[0:7], s[4:5], 0x24
 ; GFX12-GISEL-NEXT:    v_dual_mov_b32 v1, 0 :: v_dual_and_b32 v0, 0x3ff, v0
 ; GFX12-GISEL-NEXT:    s_delay_alu instid0(VALU_DEP_1)
 ; GFX12-GISEL-NEXT:    v_lshlrev_b32_e32 v0, 2, v0
@@ -411,7 +411,7 @@ entry:
 define amdgpu_kernel void @test1_s_barrier_signal_isfirst_var(ptr addrspace(1) %a, ptr addrspace(1) %b, ptr addrspace(1) %c, ptr addrspace(1) %out) #0 {
 ; GFX12-SDAG-LABEL: test1_s_barrier_signal_isfirst_var:
 ; GFX12-SDAG:       ; %bb.0: ; %entry
-; GFX12-SDAG-NEXT:    s_load_b256 s[0:7], s[2:3], 0x24
+; GFX12-SDAG-NEXT:    s_load_b256 s[0:7], s[4:5], 0x24
 ; GFX12-SDAG-NEXT:    v_dual_mov_b32 v1, 0 :: v_dual_and_b32 v0, 0x3ff, v0
 ; GFX12-SDAG-NEXT:    s_mov_b32 m0, 1
 ; GFX12-SDAG-NEXT:    s_delay_alu instid0(VALU_DEP_1)
@@ -434,7 +434,7 @@ define amdgpu_kernel void @test1_s_barrier_signal_isfirst_var(ptr addrspace(1) %
 ;
 ; GFX12-GISEL-LABEL: test1_s_barrier_signal_isfirst_var:
 ; GFX12-GISEL:       ; %bb.0: ; %entry
-; GFX12-GISEL-NEXT:    s_load_b256 s[0:7], s[2:3], 0x24
+; GFX12-GISEL-NEXT:    s_load_b256 s[0:7], s[4:5], 0x24
 ; GFX12-GISEL-NEXT:    v_dual_mov_b32 v1, 0 :: v_dual_and_b32 v0, 0x3ff, v0
 ; GFX12-GISEL-NEXT:    s_mov_b32 m0, 1
 ; GFX12-GISEL-NEXT:    s_delay_alu instid0(VALU_DEP_1)
@@ -545,7 +545,7 @@ define void @test2_s_barrier_signal_isfirst_var(ptr addrspace(1) %a, ptr addrspa
 define amdgpu_kernel void @test1_s_barrier_init(ptr addrspace(1) %out, i32 %mbrCnt) #0 {
 ; GFX12-SDAG-LABEL: test1_s_barrier_init:
 ; GFX12-SDAG:       ; %bb.0: ; %entry
-; GFX12-SDAG-NEXT:    s_load_b96 s[0:2], s[2:3], 0x24
+; GFX12-SDAG-NEXT:    s_load_b96 s[0:2], s[4:5], 0x24
 ; GFX12-SDAG-NEXT:    v_and_b32_e32 v0, 0x3ff, v0
 ; GFX12-SDAG-NEXT:    s_delay_alu instid0(VALU_DEP_1) | instskip(SKIP_1) | instid1(VALU_DEP_1)
 ; GFX12-SDAG-NEXT:    v_dual_mov_b32 v2, 0 :: v_dual_lshlrev_b32 v3, 2, v0
@@ -563,7 +563,7 @@ define amdgpu_kernel void @test1_s_barrier_init(ptr addrspace(1) %out, i32 %mbrC
 ;
 ; GFX12-GISEL-LABEL: test1_s_barrier_init:
 ; GFX12-GISEL:       ; %bb.0: ; %entry
-; GFX12-GISEL-NEXT:    s_load_b96 s[0:2], s[2:3], 0x24
+; GFX12-GISEL-NEXT:    s_load_b96 s[0:2], s[4:5], 0x24
 ; GFX12-GISEL-NEXT:    v_and_b32_e32 v0, 0x3ff, v0
 ; GFX12-GISEL-NEXT:    s_delay_alu instid0(VALU_DEP_1) | instskip(SKIP_1) | instid1(VALU_DEP_1)
 ; GFX12-GISEL-NEXT:    v_dual_mov_b32 v2, 0 :: v_dual_lshlrev_b32 v3, 2, v0
@@ -591,7 +591,7 @@ entry:
 define amdgpu_kernel void @test2_s_barrier_init(ptr addrspace(1) %out, i32 %mbrCnt) #0 {
 ; GFX12-SDAG-LABEL: test2_s_barrier_init:
 ; GFX12-SDAG:       ; %bb.0: ; %entry
-; GFX12-SDAG-NEXT:    s_load_b96 s[0:2], s[2:3], 0x24
+; GFX12-SDAG-NEXT:    s_load_b96 s[0:2], s[4:5], 0x24
 ; GFX12-SDAG-NEXT:    v_and_b32_e32 v0, 0x3ff, v0
 ; GFX12-SDAG-NEXT:    s_delay_alu instid0(VALU_DEP_1) | instskip(SKIP_1) | instid1(VALU_DEP_1)
 ; GFX12-SDAG-NEXT:    v_dual_mov_b32 v2, 0 :: v_dual_lshlrev_b32 v3, 2, v0
@@ -609,7 +609,7 @@ define amdgpu_kernel void @test2_s_barrier_init(ptr addrspace(1) %out, i32 %mbrC
 ;
 ; GFX12-GISEL-LABEL: test2_s_barrier_init:
 ; GFX12-GISEL:       ; %bb.0: ; %entry
-; GFX12-GISEL-NEXT:    s_load_b96 s[0:2], s[2:3], 0x24
+; GFX12-GISEL-NEXT:    s_load_b96 s[0:2], s[4:5], 0x24
 ; GFX12-GISEL-NEXT:    v_and_b32_e32 v0, 0x3ff, v0
 ; GFX12-GISEL-NEXT:    s_delay_alu instid0(VALU_DEP_1) | instskip(SKIP_1) | instid1(VALU_DEP_1)
 ; GFX12-GISEL-NEXT:    v_dual_mov_b32 v2, 0 :: v_dual_lshlrev_b32 v3, 2, v0
@@ -637,7 +637,7 @@ entry:
 define amdgpu_kernel void @test3_s_barrier_init(ptr addrspace(1) %out, i32 %mbrCnt) #0 {
 ; GFX12-SDAG-LABEL: test3_s_barrier_init:
 ; GFX12-SDAG:       ; %bb.0: ; %entry
-; GFX12-SDAG-NEXT:    s_load_b96 s[0:2], s[2:3], 0x24
+; GFX12-SDAG-NEXT:    s_load_b96 s[0:2], s[4:5], 0x24
 ; GFX12-SDAG-NEXT:    v_and_b32_e32 v0, 0x3ff, v0
 ; GFX12-SDAG-NEXT:    s_delay_alu instid0(VALU_DEP_1) | instskip(SKIP_1) | instid1(VALU_DEP_1)
 ; GFX12-SDAG-NEXT:    v_dual_mov_b32 v2, 0 :: v_dual_lshlrev_b32 v3, 2, v0
@@ -655,7 +655,7 @@ define amdgpu_kernel void @test3_s_barrier_init(ptr addrspace(1) %out, i32 %mbrC
 ;
 ; GFX12-GISEL-LABEL: test3_s_barrier_init:
 ; GFX12-GISEL:       ; %bb.0: ; %entry
-; GFX12-GISEL-NEXT:    s_load_b96 s[0:2], s[2:3], 0x24
+; GFX12-GISEL-NEXT:    s_load_b96 s[0:2], s[4:5], 0x24
 ; GFX12-GISEL-NEXT:    v_and_b32_e32 v0, 0x3ff, v0
 ; GFX12-GISEL-NEXT:    s_delay_alu instid0(VALU_DEP_1) | instskip(SKIP_1) | instid1(VALU_DEP_1)
 ; GFX12-GISEL-NEXT:    v_dual_mov_b32 v2, 0 :: v_dual_lshlrev_b32 v3, 2, v0
@@ -683,7 +683,7 @@ entry:
 define amdgpu_kernel void @test4_s_barrier_init(ptr addrspace(1) %out, i32 %bar, i32 %mbrCnt) #0 {
 ; GFX12-SDAG-LABEL: test4_s_barrier_init:
 ; GFX12-SDAG:       ; %bb.0: ; %entry
-; GFX12-SDAG-NEXT:    s_load_b128 s[0:3], s[2:3], 0x24
+; GFX12-SDAG-NEXT:    s_load_b128 s[0:3], s[4:5], 0x24
 ; GFX12-SDAG-NEXT:    v_and_b32_e32 v0, 0x3ff, v0
 ; GFX12-SDAG-NEXT:    s_delay_alu instid0(VALU_DEP_1) | instskip(SKIP_1) | instid1(VALU_DEP_1)
 ; GFX12-SDAG-NEXT:    v_dual_mov_b32 v2, 0 :: v_dual_lshlrev_b32 v3, 2, v0
@@ -703,7 +703,7 @@ define amdgpu_kernel void @test4_s_barrier_init(ptr addrspace(1) %out, i32 %bar,
 ;
 ; GFX12-GISEL-LABEL: test4_s_barrier_init:
 ; GFX12-GISEL:       ; %bb.0: ; %entry
-; GFX12-GISEL-NEXT:    s_load_b128 s[0:3], s[2:3], 0x24
+; GFX12-GISEL-NEXT:    s_load_b128 s[0:3], s[4:5], 0x24
 ; GFX12-GISEL-NEXT:    v_and_b32_e32 v0, 0x3ff, v0
 ; GFX12-GISEL-NEXT:    s_delay_alu instid0(VALU_DEP_1) | instskip(SKIP_1) | instid1(VALU_DEP_1)
 ; GFX12-GISEL-NEXT:    v_dual_mov_b32 v2, 0 :: v_dual_lshlrev_b32 v3, 2, v0
@@ -769,7 +769,7 @@ define amdgpu_kernel void @test1_s_barrier_join(ptr addrspace(1) %out) #0 {
 ;
 ; GFX12-SDAG-LABEL: test1_s_barrier_join:
 ; GFX12-SDAG:       ; %bb.0: ; %entry
-; GFX12-SDAG-NEXT:    s_load_b64 s[0:1], s[2:3], 0x24
+; GFX12-SDAG-NEXT:    s_load_b64 s[0:1], s[4:5], 0x24
 ; GFX12-SDAG-NEXT:    v_and_b32_e32 v0, 0x3ff, v0
 ; GFX12-SDAG-NEXT:    s_delay_alu instid0(VALU_DEP_1) | instskip(SKIP_1) | instid1(VALU_DEP_1)
 ; GFX12-SDAG-NEXT:    v_dual_mov_b32 v2, 0 :: v_dual_lshlrev_b32 v3, 2, v0
@@ -785,7 +785,7 @@ define amdgpu_kernel void @test1_s_barrier_join(ptr addrspace(1) %out) #0 {
 ;
 ; GFX12-GISEL-LABEL: test1_s_barrier_join:
 ; GFX12-GISEL:       ; %bb.0: ; %entry
-; GFX12-GISEL-NEXT:    s_load_b64 s[0:1], s[2:3], 0x24
+; GFX12-GISEL-NEXT:    s_load_b64 s[0:1], s[4:5], 0x24
 ; GFX12-GISEL-NEXT:    v_and_b32_e32 v0, 0x3ff, v0
 ; GFX12-GISEL-NEXT:    s_delay_alu instid0(VALU_DEP_1) | instskip(SKIP_1) | instid1(VALU_DEP_1)
 ; GFX12-GISEL-NEXT:    v_dual_mov_b32 v2, 0 :: v_dual_lshlrev_b32 v3, 2, v0
@@ -813,7 +813,7 @@ define amdgpu_kernel void @test2_s_barrier_join(ptr addrspace(1) %out) #0 {
 ;
 ; GFX12-SDAG-LABEL: test2_s_barrier_join:
 ; GFX12-SDAG:       ; %bb.0: ; %entry
-; GFX12-SDAG-NEXT:    s_load_b64 s[0:1], s[2:3], 0x24
+; GFX12-SDAG-NEXT:    s_load_b64 s[0:1], s[4:5], 0x24
 ; GFX12-SDAG-NEXT:    v_and_b32_e32 v0, 0x3ff, v0
 ; GFX12-SDAG-NEXT:    s_delay_alu instid0(VALU_DEP_1) | instskip(SKIP_1) | instid1(VALU_DEP_1)
 ; GFX12-SDAG-NEXT:    v_dual_mov_b32 v2, 0 :: v_dual_lshlrev_b32 v3, 2, v0
@@ -829,7 +829,7 @@ define amdgpu_kernel void @test2_s_barrier_join(ptr addrspace(1) %out) #0 {
 ;
 ; GFX12-GISEL-LABEL: test2_s_barrier_join:
 ; GFX12-GISEL:       ; %bb.0: ; %entry
-; GFX12-GISEL-NEXT:    s_load_b64 s[0:1], s[2:3], 0x24
+; GFX12-GISEL-NEXT:    s_load_b64 s[0:1], s[4:5], 0x24
 ; GFX12-GISEL-NEXT:    v_and_b32_e32 v0, 0x3ff, v0
 ; GFX12-GISEL-NEXT:    s_delay_alu instid0(VALU_DEP_1) | instskip(SKIP_1) | instid1(VALU_DEP_1)
 ; GFX12-GISEL-NEXT:    v_dual_mov_b32 v2, 0 :: v_dual_lshlrev_b32 v3, 2, v0
@@ -857,7 +857,7 @@ define amdgpu_kernel void @test3_s_barrier_join(ptr addrspace(1) %out) #0 {
 ;
 ; GFX12-SDAG-LABEL: test3_s_barrier_join:
 ; GFX12-SDAG:       ; %bb.0: ; %entry
-; GFX12-SDAG-NEXT:    s_load_b64 s[0:1], s[2:3], 0x24
+; GFX12-SDAG-NEXT:    s_load_b64 s[0:1], s[4:5], 0x24
 ; GFX12-SDAG-NEXT:    v_and_b32_e32 v0, 0x3ff, v0
 ; GFX12-SDAG-NEXT:    s_delay_alu instid0(VALU_DEP_1) | instskip(SKIP_1) | instid1(VALU_DEP_1)
 ; GFX12-SDAG-NEXT:    v_dual_mov_b32 v2, 0 :: v_dual_lshlrev_b32 v3, 2, v0
@@ -873,7 +873,7 @@ define amdgpu_kernel void @test3_s_barrier_join(ptr addrspace(1) %out) #0 {
 ;
 ; GFX12-GISEL-LABEL: test3_s_barrier_join:
 ; GFX12-GISEL:       ; %bb.0: ; %entry
-; GFX12-GISEL-NEXT:    s_load_b64 s[0:1], s[2:3], 0x24
+; GFX12-GISEL-NEXT:    s_load_b64 s[0:1], s[4:5], 0x24
 ; GFX12-GISEL-NEXT:    v_and_b32_e32 v0, 0x3ff, v0
 ; GFX12-GISEL-NEXT:    s_delay_alu instid0(VALU_DEP_1) | instskip(SKIP_1) | instid1(VALU_DEP_1)
 ; GFX12-GISEL-NEXT:    v_dual_mov_b32 v2, 0 :: v_dual_lshlrev_b32 v3, 2, v0
@@ -900,7 +900,7 @@ entry:
 define amdgpu_kernel void @test4_s_barrier_join_m0(ptr addrspace(1) %out, i32 %bar) #0 {
 ; GFX12-SDAG-LABEL: test4_s_barrier_join_m0:
 ; GFX12-SDAG:       ; %bb.0: ; %entry
-; GFX12-SDAG-NEXT:    s_load_b96 s[0:2], s[2:3], 0x24
+; GFX12-SDAG-NEXT:    s_load_b96 s[0:2], s[4:5], 0x24
 ; GFX12-SDAG-NEXT:    v_dual_mov_b32 v1, 0 :: v_dual_and_b32 v0, 0x3ff, v0
 ; GFX12-SDAG-NEXT:    s_delay_alu instid0(VALU_DEP_1) | instskip(SKIP_1) | instid1(VALU_DEP_2)
 ; GFX12-SDAG-NEXT:    v_mul_u32_u24_e32 v2, v0, v0
@@ -917,7 +917,7 @@ define amdgpu_kernel void @test4_s_barrier_join_m0(ptr addrspace(1) %out, i32 %b
 ;
 ; GFX12-GISEL-LABEL: test4_s_barrier_join_m0:
 ; GFX12-GISEL:       ; %bb.0: ; %entry
-; GFX12-GISEL-NEXT:    s_load_b96 s[0:2], s[2:3], 0x24
+; GFX12-GISEL-NEXT:    s_load_b96 s[0:2], s[4:5], 0x24
 ; GFX12-GISEL-NEXT:    v_and_b32_e32 v0, 0x3ff, v0
 ; GFX12-GISEL-NEXT:    s_delay_alu instid0(VALU_DEP_1) | instskip(SKIP_1) | instid1(VALU_DEP_1)
 ; GFX12-GISEL-NEXT:    v_dual_mov_b32 v2, 0 :: v_dual_lshlrev_b32 v3, 2, v0
@@ -988,7 +988,7 @@ define void @test6_s_barrier_join_0() {
 define amdgpu_kernel void @test1_s_barrier_leave(ptr addrspace(1) %a, ptr addrspace(1) %b, ptr addrspace(1) %c, ptr addrspace(1) %out) #0 {
 ; GFX12-SDAG-LABEL: test1_s_barrier_leave:
 ; GFX12-SDAG:       ; %bb.0: ; %entry
-; GFX12-SDAG-NEXT:    s_load_b256 s[0:7], s[2:3], 0x24
+; GFX12-SDAG-NEXT:    s_load_b256 s[0:7], s[4:5], 0x24
 ; GFX12-SDAG-NEXT:    v_dual_mov_b32 v1, 0 :: v_dual_and_b32 v0, 0x3ff, v0
 ; GFX12-SDAG-NEXT:    s_delay_alu instid0(VALU_DEP_1)
 ; GFX12-SDAG-NEXT:    v_lshlrev_b32_e32 v0, 2, v0
@@ -1009,7 +1009,7 @@ define amdgpu_kernel void @test1_s_barrier_leave(ptr addrspace(1) %a, ptr addrsp
 ;
 ; GFX12-GISEL-LABEL: test1_s_barrier_leave:
 ; GFX12-GISEL:       ; %bb.0: ; %entry
-; GFX12-GISEL-NEXT:    s_load_b256 s[0:7], s[2:3], 0x24
+; GFX12-GISEL-NEXT:    s_load_b256 s[0:7], s[4:5], 0x24
 ; GFX12-GISEL-NEXT:    v_dual_mov_b32 v1, 0 :: v_dual_and_b32 v0, 0x3ff, v0
 ; GFX12-GISEL-NEXT:    s_delay_alu instid0(VALU_DEP_1) | instskip(SKIP_4) | instid1(SALU_CYCLE_1)
 ; GFX12-GISEL-NEXT:    v_lshlrev_b32_e32 v0, 2, v0
@@ -1047,7 +1047,7 @@ define amdgpu_kernel void @test1_s_wakeup_barrier(ptr addrspace(1) %out) #0 {
 ;
 ; GFX12-SDAG-LABEL: test1_s_wakeup_barrier:
 ; GFX12-SDAG:       ; %bb.0: ; %entry
-; GFX12-SDAG-NEXT:    s_load_b64 s[0:1], s[2:3], 0x24
+; GFX12-SDAG-NEXT:    s_load_b64 s[0:1], s[4:5], 0x24
 ; GFX12-SDAG-NEXT:    v_and_b32_e32 v0, 0x3ff, v0
 ; GFX12-SDAG-NEXT:    s_delay_alu instid0(VALU_DEP_1) | instskip(SKIP_1) | instid1(VALU_DEP_1)
 ; GFX12-SDAG-NEXT:    v_dual_mov_b32 v2, 0 :: v_dual_lshlrev_b32 v3, 2, v0
@@ -1063,7 +1063,7 @@ define amdgpu_kernel void @test1_s_wakeup_barrier(ptr addrspace(1) %out) #0 {
 ;
 ; GFX12-GISEL-LABEL: test1_s_wakeup_barrier:
 ; GFX12-GISEL:       ; %bb.0: ; %entry
-; GFX12-GISEL-NEXT:    s_load_b64 s[0:1], s[2:3], 0x24
+; GFX12-GISEL-NEXT:    s_load_b64 s[0:1], s[4:5], 0x24
 ; GFX12-GISEL-NEXT:    v_and_b32_e32 v0, 0x3ff, v0
 ; GFX12-GISEL-NEXT:    s_delay_alu instid0(VALU_DEP_1) | instskip(SKIP_1) | instid1(VALU_DEP_1)
 ; GFX12-GISEL-NEXT:    v_dual_mov_b32 v2, 0 :: v_dual_lshlrev_b32 v3, 2, v0
@@ -1091,7 +1091,7 @@ define amdgpu_kernel void @test2_s_wakeup_barrier(ptr addrspace(1) %out) #0 {
 ;
 ; GFX12-SDAG-LABEL: test2_s_wakeup_barrier:
 ; GFX12-SDAG:       ; %bb.0: ; %entry
-; GFX12-SDAG-NEXT:    s_load_b64 s[0:1], s[2:3], 0x24
+; GFX12-SDAG-NEXT:    s_load_b64 s[0:1], s[4:5], 0x24
 ; GFX12-SDAG-NEXT:    v_and_b32_e32 v0, 0x3ff, v0
 ; GFX12-SDAG-NEXT:    s_delay_alu instid0(VALU_DEP_1) | instskip(SKIP_1) | instid1(VALU_DEP_1)
 ; GFX12-SDAG-NEXT:    v_dual_mov_b32 v2, 0 :: v_dual_lshlrev_b32 v3, 2, v0
@@ -1107,7 +1107,7 @@ define amdgpu_kernel void @test2_s_wakeup_barrier(ptr addrspace(1) %out) #0 {
 ;
 ; GFX12-GISEL-LABEL: test2_s_wakeup_barrier:
 ; GFX12-GISEL:       ; %bb.0: ; %entry
-; GFX12-GISEL-NEXT:    s_load_b64 s[0:1], s[2:3], 0x24
+; GFX12-GISEL-NEXT:    s_load_b64 s[0:1], s[4:5], 0x24
 ; GFX12-GISEL-NEXT:    v_and_b32_e32 v0, 0x3ff, v0
 ; GFX12-GISEL-NEXT:    s_delay_alu instid0(VALU_DEP_1) | instskip(SKIP_1) | instid1(VALU_DEP_1)
 ; GFX12-GISEL-NEXT:    v_dual_mov_b32 v2, 0 :: v_dual_lshlrev_b32 v3, 2, v0
@@ -1135,7 +1135,7 @@ define amdgpu_kernel void @test3_s_wakeup_barrier(ptr addrspace(1) %out) #0 {
 ;
 ; GFX12-SDAG-LABEL: test3_s_wakeup_barrier:
 ; GFX12-SDAG:       ; %bb.0: ; %entry
-; GFX12-SDAG-NEXT:    s_load_b64 s[0:1], s[2:3], 0x24
+; GFX12-SDAG-NEXT:    s_load_b64 s[0:1], s[4:5], 0x24
 ; GFX12-SDAG-NEXT:    v_and_b32_e32 v0, 0x3ff, v0
 ; GFX12-SDAG-NEXT:    s_delay_alu instid0(VALU_DEP_1) | instskip(SKIP_1) | instid1(VALU_DEP_1)
 ; GFX12-SDAG-NEXT:    v_dual_mov_b32 v2, 0 :: v_dual_lshlrev_b32 v3, 2, v0
@@ -1151,7 +1151,7 @@ define amdgpu_kernel void @test3_s_wakeup_barrier(ptr addrspace(1) %out) #0 {
 ;
 ; GFX12-GISEL-LABEL: test3_s_wakeup_barrier:
 ; GFX12-GISEL:       ; %bb.0: ; %entry
-; GFX12-GISEL-NEXT:    s_load_b64 s[0:1], s[2:3], 0x24
+; GFX12-GISEL-NEXT:    s_load_b64 s[0:1], s[4:5], 0x24
 ; GFX12-GISEL-NEXT:    v_and_b32_e32 v0, 0x3ff, v0
 ; GFX12-GISEL-NEXT:    s_delay_alu instid0(VALU_DEP_1) | instskip(SKIP_1) | instid1(VALU_DEP_1)
 ; GFX12-GISEL-NEXT:    v_dual_mov_b32 v2, 0 :: v_dual_lshlrev_b32 v3, 2, v0
@@ -1178,7 +1178,7 @@ entry:
 define amdgpu_kernel void @test4_s_wakeup_barrier_m0(ptr addrspace(1) %out, i32 %bar) #0 {
 ; GFX12-SDAG-LABEL: test4_s_wakeup_barrier_m0:
 ; GFX12-SDAG:       ; %bb.0: ; %entry
-; GFX12-SDAG-NEXT:    s_load_b96 s[0:2], s[2:3], 0x24
+; GFX12-SDAG-NEXT:    s_load_b96 s[0:2], s[4:5], 0x24
 ; GFX12-SDAG-NEXT:    v_dual_mov_b32 v1, 0 :: v_dual_and_b32 v0, 0x3ff, v0
 ; GFX12-SDAG-NEXT:    s_delay_alu instid0(VALU_DEP_1) | instskip(SKIP_1) | instid1(VALU_DEP_2)
 ; GFX12-SDAG-NEXT:    v_mul_u32_u24_e32 v2, v0, v0
@@ -1195,7 +1195,7 @@ define amdgpu_kernel void @test4_s_wakeup_barrier_m0(ptr addrspace(1) %out, i32 
 ;
 ; GFX12-GISEL-LABEL: test4_s_wakeup_barrier_m0:
 ; GFX12-GISEL:       ; %bb.0: ; %entry
-; GFX12-GISEL-NEXT:    s_load_b96 s[0:2], s[2:3], 0x24
+; GFX12-GISEL-NEXT:    s_load_b96 s[0:2], s[4:5], 0x24
 ; GFX12-GISEL-NEXT:    v_and_b32_e32 v0, 0x3ff, v0
 ; GFX12-GISEL-NEXT:    s_delay_alu instid0(VALU_DEP_1) | instskip(SKIP_1) | instid1(VALU_DEP_1)
 ; GFX12-GISEL-NEXT:    v_dual_mov_b32 v2, 0 :: v_dual_lshlrev_b32 v3, 2, v0
@@ -1252,7 +1252,7 @@ define void @test5_s_wakeup_barrier_m0(i32 %arg) {
 define amdgpu_kernel void @test1_s_get_barrier_state(ptr addrspace(1) %out) #0 {
 ; GFX12-LABEL: test1_s_get_barrier_state:
 ; GFX12:       ; %bb.0: ; %entry
-; GFX12-NEXT:    s_load_b64 s[0:1], s[2:3], 0x24
+; GFX12-NEXT:    s_load_b64 s[0:1], s[4:5], 0x24
 ; GFX12-NEXT:    v_dual_mov_b32 v1, 0 :: v_dual_and_b32 v0, 0x3ff, v0
 ; GFX12-NEXT:    s_delay_alu instid0(VALU_DEP_1) | instskip(SKIP_4) | instid1(SALU_CYCLE_2)
 ; GFX12-NEXT:    v_lshlrev_b32_e32 v0, 2, v0
@@ -1277,7 +1277,7 @@ entry:
 define amdgpu_kernel void @test2_s_get_barrier_state(ptr addrspace(1) %out) #0 {
 ; GFX12-LABEL: test2_s_get_barrier_state:
 ; GFX12:       ; %bb.0: ; %entry
-; GFX12-NEXT:    s_load_b64 s[0:1], s[2:3], 0x24
+; GFX12-NEXT:    s_load_b64 s[0:1], s[4:5], 0x24
 ; GFX12-NEXT:    v_dual_mov_b32 v1, 0 :: v_dual_and_b32 v0, 0x3ff, v0
 ; GFX12-NEXT:    s_delay_alu instid0(VALU_DEP_1) | instskip(SKIP_4) | instid1(SALU_CYCLE_2)
 ; GFX12-NEXT:    v_lshlrev_b32_e32 v0, 2, v0
@@ -1302,7 +1302,7 @@ entry:
 define amdgpu_kernel void @test3_s_get_barrier_state(ptr addrspace(1) %out) #0 {
 ; GFX12-LABEL: test3_s_get_barrier_state:
 ; GFX12:       ; %bb.0: ; %entry
-; GFX12-NEXT:    s_load_b64 s[0:1], s[2:3], 0x24
+; GFX12-NEXT:    s_load_b64 s[0:1], s[4:5], 0x24
 ; GFX12-NEXT:    v_dual_mov_b32 v1, 0 :: v_dual_and_b32 v0, 0x3ff, v0
 ; GFX12-NEXT:    s_delay_alu instid0(VALU_DEP_1) | instskip(SKIP_4) | instid1(SALU_CYCLE_2)
 ; GFX12-NEXT:    v_lshlrev_b32_e32 v0, 2, v0
@@ -1327,7 +1327,7 @@ entry:
 define amdgpu_kernel void @test4_s_get_barrier_state_m0(ptr addrspace(1) %out, i32 %bar) #0 {
 ; GFX12-LABEL: test4_s_get_barrier_state_m0:
 ; GFX12:       ; %bb.0: ; %entry
-; GFX12-NEXT:    s_load_b96 s[0:2], s[2:3], 0x24
+; GFX12-NEXT:    s_load_b96 s[0:2], s[4:5], 0x24
 ; GFX12-NEXT:    v_dual_mov_b32 v1, 0 :: v_dual_and_b32 v0, 0x3ff, v0
 ; GFX12-NEXT:    s_delay_alu instid0(VALU_DEP_1)
 ; GFX12-NEXT:    v_lshlrev_b32_e32 v0, 2, v0
@@ -1407,7 +1407,7 @@ define i32 @test6_s_get_barrier_state_0() {
 define amdgpu_kernel void @test_barrier_convert(ptr addrspace(1) %out) #0 {
 ; GFX12-SDAG-LABEL: test_barrier_convert:
 ; GFX12-SDAG:       ; %bb.0: ; %entry
-; GFX12-SDAG-NEXT:    s_load_b64 s[0:1], s[2:3], 0x24
+; GFX12-SDAG-NEXT:    s_load_b64 s[0:1], s[4:5], 0x24
 ; GFX12-SDAG-NEXT:    v_and_b32_e32 v0, 0x3ff, v0
 ; GFX12-SDAG-NEXT:    s_delay_alu instid0(VALU_DEP_1) | instskip(SKIP_1) | instid1(VALU_DEP_1)
 ; GFX12-SDAG-NEXT:    v_dual_mov_b32 v2, 0 :: v_dual_lshlrev_b32 v3, 2, v0
@@ -1425,7 +1425,7 @@ define amdgpu_kernel void @test_barrier_convert(ptr addrspace(1) %out) #0 {
 ;
 ; GFX12-GISEL-LABEL: test_barrier_convert:
 ; GFX12-GISEL:       ; %bb.0: ; %entry
-; GFX12-GISEL-NEXT:    s_load_b64 s[0:1], s[2:3], 0x24
+; GFX12-GISEL-NEXT:    s_load_b64 s[0:1], s[4:5], 0x24
 ; GFX12-GISEL-NEXT:    v_and_b32_e32 v0, 0x3ff, v0
 ; GFX12-GISEL-NEXT:    s_delay_alu instid0(VALU_DEP_1) | instskip(SKIP_1) | instid1(VALU_DEP_1)
 ; GFX12-GISEL-NEXT:    v_dual_mov_b32 v2, 0 :: v_dual_lshlrev_b32 v3, 2, v0

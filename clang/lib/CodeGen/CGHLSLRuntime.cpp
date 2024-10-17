@@ -480,7 +480,8 @@ void CGHLSLRuntime::generateGlobalCtorDtorCalls() {
     if (!F.hasFnAttribute("hlsl.shader"))
       continue;
     auto *Token = getConvergenceToken(F.getEntryBlock());
-    Instruction *IP = Token ? Token->getNextNode() : &*F.getEntryBlock().begin();
+    Instruction *IP =
+        Token ? Token->getNextNode() : &*F.getEntryBlock().begin();
     IRBuilder<> B(IP);
     SmallVector<OperandBundleDef, 1> OB;
     if (Token) {

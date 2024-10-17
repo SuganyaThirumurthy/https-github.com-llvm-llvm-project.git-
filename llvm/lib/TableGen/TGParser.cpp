@@ -34,7 +34,7 @@ namespace llvm {
 
 struct SubClassReference {
   SMRange RefRange;
-  Record *Rec = nullptr;
+  const Record *Rec = nullptr;
   SmallVector<ArgumentInit *, 4> TemplateArgs;
 
   SubClassReference() = default;
@@ -110,7 +110,7 @@ static void checkConcrete(Record &R) {
 
 /// Return an Init with a qualifier prefix referring
 /// to CurRec's name.
-static Init *QualifyName(Record &CurRec, Init *Name) {
+static Init *QualifyName(const Record &CurRec, Init *Name) {
   RecordKeeper &RK = CurRec.getRecords();
   Init *NewName = BinOpInit::getStrConcat(
       CurRec.getNameInit(),
@@ -118,7 +118,7 @@ static Init *QualifyName(Record &CurRec, Init *Name) {
   NewName = BinOpInit::getStrConcat(NewName, Name);
 
   if (BinOpInit *BinOp = dyn_cast<BinOpInit>(NewName))
-    NewName = BinOp->Fold(&CurRec);
+    NewName = BinOp->Fold(const_cast<Record *>(&CurRec));
   return NewName;
 }
 
@@ -127,7 +127,7 @@ static Init *QualifyName(MultiClass *MC, Init *Name) {
 }
 
 /// Return the qualified version of the implicit 'NAME' template argument.
-static Init *QualifiedNameOfImplicitName(Record &Rec) {
+static Init *QualifiedNameOfImplicitName(const Record &Rec) {
   return QualifyName(Rec, StringInit::get(Rec.getRecords(), "NAME"));
 }
 
@@ -296,7 +296,7 @@ bool TGParser::SetValue(Record *CurRec, SMLoc Loc, Init *ValName,
 /// AddSubClass - Add SubClass as a subclass to CurRec, resolving its template
 /// args as SubClass's template arguments.
 bool TGParser::AddSubClass(Record *CurRec, SubClassReference &SubClass) {
-  Record *SC = SubClass.Rec;
+  const Record *SC = SubClass.Rec;
   MapResolver R(CurRec);
 
   // Loop over all the subclass record's fields. Add regular fields to the new
@@ -586,8 +586,9 @@ bool TGParser::addDefOne(std::unique_ptr<Record> Rec) {
   return false;
 }
 
-bool TGParser::resolveArguments(Record *Rec, ArrayRef<ArgumentInit *> ArgValues,
-                                SMLoc Loc, ArgValueHandler ArgValueHandler) {
+bool TGParser::resolveArguments(const Record *Rec,
+                                ArrayRef<ArgumentInit *> ArgValues, SMLoc Loc,
+                                ArgValueHandler ArgValueHandler) {
   ArrayRef<Init *> ArgNames = Rec->getTemplateArgs();
   assert(ArgValues.size() <= ArgNames.size() &&
          "Too many template arguments allowed");
@@ -629,7 +630,7 @@ bool TGParser::resolveArguments(Record *Rec, ArrayRef<ArgumentInit *> ArgValues,
 
 /// Resolve the arguments of class and set them to MapResolver.
 /// Returns true if failed.
-bool TGParser::resolveArgumentsOfClass(MapResolver &R, Record *Rec,
+bool TGParser::resolveArgumentsOfClass(MapResolver &R, const Record *Rec,
                                        ArrayRef<ArgumentInit *> ArgValues,
                                        SMLoc Loc) {
   return resolveArguments(Rec, ArgValues, Loc,
@@ -704,13 +705,13 @@ Init *TGParser::ParseObjectName(MultiClass *CurMultiClass) {
 ///
 ///    ClassID ::= ID
 ///
-Record *TGParser::ParseClassID() {
+const Record *TGParser::ParseClassID() {
   if (Lex.getCode() != tgtok::Id) {
     TokError("expected name for ClassID");
     return nullptr;
   }
 
-  Record *Result = Records.getClass(Lex.getCurStrVal());
+  const Record *Result = Records.getClass(Lex.getCurStrVal());
   if (!Result) {
     std::string Msg("Couldn't find class '" + Lex.getCurStrVal() + "'");
     if (MultiClasses[Lex.getCurStrVal()].get())
@@ -2699,7 +2700,7 @@ Init *TGParser::ParseSimpleValue(Record *CurRec, const RecTy *ItemType,
     // Value ::= CLASSID '<' ArgValueList '>' (CLASSID has been consumed)
     // This is supposed to synthesize a new anonymous definition, deriving
     // from the class with the template arguments, but no body.
-    Record *Class = Records.getClass(Name->getValue());
+    const Record *Class = Records.getClass(Name->getValue());
     if (!Class) {
       Error(NameLoc.Start,
             "Expected a class name, got '" + Name->getValue() + "'");
@@ -3185,7 +3186,8 @@ void TGParser::ParseValueList(SmallVectorImpl<Init *> &Result, Record *CurRec,
 //   PostionalArgValueList ::= [Value {',' Value}*]
 //   NamedArgValueList ::= [NameValue '=' Value {',' NameValue '=' Value}*]
 bool TGParser::ParseTemplateArgValueList(
-    SmallVectorImpl<ArgumentInit *> &Result, Record *CurRec, Record *ArgsRec) {
+    SmallVectorImpl<ArgumentInit *> &Result, Record *CurRec,
+    const Record *ArgsRec) {
   assert(Result.empty() && "Result vector is not empty");
   ArrayRef<Init *> TArgs = ArgsRec->getTemplateArgs();
 
@@ -3978,7 +3980,7 @@ bool TGParser::ParseClass() {
     return TokError("expected class name after 'class' keyword");
 
   const std::string &Name = Lex.getCurStrVal();
-  Record *CurRec = Records.getClass(Name);
+  Record *CurRec = const_cast<Record *>(Records.getClass(Name));
   if (CurRec) {
     // If the body was previously defined, this is an error.
     if (!CurRec->getValues().empty() ||
@@ -4399,7 +4401,8 @@ bool TGParser::ParseFile() {
 // If necessary, replace an argument with a cast to the required type.
 // The argument count has already been checked.
 bool TGParser::CheckTemplateArgValues(
-    SmallVectorImpl<llvm::ArgumentInit *> &Values, SMLoc Loc, Record *ArgsRec) {
+    SmallVectorImpl<llvm::ArgumentInit *> &Values, SMLoc Loc,
+    const Record *ArgsRec) {
   ArrayRef<Init *> TArgs = ArgsRec->getTemplateArgs();
 
   for (llvm::ArgumentInit *&Value : Values) {
@@ -4409,7 +4412,7 @@ bool TGParser::CheckTemplateArgValues(
     if (Value->isNamed())
       ArgName = Value->getName();
 
-    RecordVal *Arg = ArgsRec->getValue(ArgName);
+    const RecordVal *Arg = ArgsRec->getValue(ArgName);
     const RecTy *ArgType = Arg->getType();
 
     if (TypedInit *ArgValue = dyn_cast<TypedInit>(Value->getValue())) {

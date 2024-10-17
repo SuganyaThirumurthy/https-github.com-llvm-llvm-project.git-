@@ -76,6 +76,46 @@ using namespace lldb_private::line_editor;
 
 #endif // #if LLDB_EDITLINE_USE_WCHAR
 
+#if LLDB_EDITLINE_USE_WCHAR
+std::string ToBytes(const std::wstring &in) {
+  static std::locale locale("C.UTF-8");
+  static const auto &cvt =
+      std::use_facet<std::codecvt<wchar_t, char, std::mbstate_t>>(locale);
+
+  const size_t length = in.length();
+  std::string output(length + 1, 0x0);
+
+  std::mbstate_t mbs{};
+  const wchar_t *in_next;
+  char *out_next;
+
+  if (cvt.out(mbs, in.data(), in.data() + length + 1, in_next, output.data(),
+              output.data() + output.length() + 1,
+              out_next) == std::codecvt_base::ok)
+    return output;
+  return {};
+}
+
+std::wstring FromBytes(const std::string &in) {
+  static std::locale locale("C.UTF-8");
+  static const auto &cvt =
+      std::use_facet<std::codecvt<wchar_t, char, std::mbstate_t>>(locale);
+
+  const size_t length = in.length();
+  std::wstring output(length + 1, 0x0);
+
+  std::mbstate_t mbs{};
+  const char *in_next;
+  wchar_t *out_next;
+
+  if (cvt.in(mbs, in.data(), in.data() + length + 1, in_next, output.data(),
+             output.data() + output.length() + 1,
+             out_next) == std::codecvt_base::ok)
+    return output;
+  return {};
+}
+#endif
+
 bool IsOnlySpaces(const EditLineStringType &content) {
   for (wchar_t ch : content) {
     if (ch != EditLineCharType(' '))
@@ -444,7 +484,7 @@ StringList Editline::GetInputAsStringList(int line_count) {
     if (line_count == 0)
       break;
 #if LLDB_EDITLINE_USE_WCHAR
-    lines.AppendString(m_utf8conv.to_bytes(line));
+    lines.AppendString(ToBytes(line));
 #else
     lines.AppendString(line);
 #endif
@@ -636,7 +676,7 @@ unsigned char Editline::BreakLineCommand(int ch) {
     if (m_fix_indentation_callback) {
       StringList lines = GetInputAsStringList(m_current_line_index + 1);
 #if LLDB_EDITLINE_USE_WCHAR
-      lines.AppendString(m_utf8conv.to_bytes(new_line_fragment));
+      lines.AppendString(ToBytes(new_line_fragment));
 #else
       lines.AppendString(new_line_fragment);
 #endif
@@ -684,8 +724,7 @@ unsigned char Editline::EndOrAddLineCommand(int ch) {
       m_input_lines.clear();
       for (unsigned index = 0; index < lines.GetSize(); index++) {
 #if LLDB_EDITLINE_USE_WCHAR
-        m_input_lines.insert(m_input_lines.end(),
-                             m_utf8conv.from_bytes(lines[index]));
+        m_input_lines.insert(m_input_lines.end(), FromBytes(lines[index]));
 #else
         m_input_lines.insert(m_input_lines.end(), lines[index]);
 #endif
@@ -869,7 +908,7 @@ unsigned char Editline::FixIndentationCommand(int ch) {
     currentLine = currentLine.erase(0, -indent_correction);
   }
 #if LLDB_EDITLINE_USE_WCHAR
-  m_input_lines[m_current_line_index] = m_utf8conv.from_bytes(currentLine);
+  m_input_lines[m_current_line_index] = FromBytes(currentLine);
 #else
   m_input_lines[m_current_line_index] = currentLine;
 #endif
@@ -1502,7 +1541,7 @@ bool Editline::GetLine(std::string &line, bool &interrupted) {
     } else {
       m_history_sp->Enter(input);
 #if LLDB_EDITLINE_USE_WCHAR
-      line = m_utf8conv.to_bytes(SplitLines(input)[0]);
+      line = ToBytes(SplitLines(input)[0]);
 #else
       line = SplitLines(input)[0];
 #endif
@@ -1574,7 +1613,9 @@ bool Editline::CompleteCharacter(char ch, EditLineGetCharType &out) {
   out = (unsigned char)ch;
   return true;
 #else
-  std::codecvt_utf8<wchar_t> cvt;
+  std::locale locale("C.UTF-8");
+  const auto &cvt =
+      std::use_facet<std::codecvt<wchar_t, char, std::mbstate_t>>(locale);
   llvm::SmallString<4> input;
   for (;;) {
     const char *from_next;

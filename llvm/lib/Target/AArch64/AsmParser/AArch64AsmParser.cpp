@@ -3778,6 +3778,7 @@ static const struct Extension {
     {"tlbiw", {AArch64::FeatureTLBIW}},
     {"lsui", {AArch64::FeatureLSUI}},
     {"occmo", {AArch64::FeatureOCCMO}},
+    {"pcdphint", {AArch64::FeaturePCDPHINT}},
 };
 
 static void setRequiredFeatureString(FeatureBitset FBS, std::string &Str) {

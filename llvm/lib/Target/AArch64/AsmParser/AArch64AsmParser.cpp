@@ -3779,6 +3779,17 @@ static const struct Extension {
     {"lsui", {AArch64::FeatureLSUI}},
     {"occmo", {AArch64::FeatureOCCMO}},
     {"pcdphint", {AArch64::FeaturePCDPHINT}},
+    {"cmpbr", {AArch64::FeatureCMPBR}},
+    {"f8f32mm", {AArch64::FeatureF8F32MM}},
+    {"f8f16mm", {AArch64::FeatureF8F16MM}},
+    {"fprcvt", {AArch64::FeatureFPRCVT}},
+    {"lsfe", {AArch64::FeatureLSFE}},
+    {"sme2p2", {AArch64::FeatureSME2p2}},
+    {"ssve-aes", {AArch64::FeatureSSVE_AES}},
+    {"sve2p2", {AArch64::FeatureSVE2p2}},
+    {"sve-aes2", {AArch64::FeatureSVEAES2}},
+    {"sve-bfscale", {AArch64::FeatureSVEBFSCALE}},
+    {"sve-f16f32mm", {AArch64::FeatureSVE_F16F32MM}},
 };
 
 static void setRequiredFeatureString(FeatureBitset FBS, std::string &Str) {

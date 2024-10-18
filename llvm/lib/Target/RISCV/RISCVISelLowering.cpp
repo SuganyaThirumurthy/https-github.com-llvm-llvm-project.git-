@@ -20368,6 +20368,8 @@ RISCVTargetLowering::getConstraintType(StringRef Constraint) const {
       return C_RegisterClass;
     if (Constraint == "cr" || Constraint == "cf")
       return C_RegisterClass;
+    if (Constraint == "Pr")
+      return C_RegisterClass;
   }
   return TargetLowering::getConstraintType(Constraint);
 }
@@ -20385,11 +20387,11 @@ RISCVTargetLowering::getRegForInlineAsmConstraint(const TargetRegisterInfo *TRI,
       if (VT.isVector())
         break;
       if (VT == MVT::f16 && Subtarget.hasStdExtZhinxmin())
-        return std::make_pair(0U, &RISCV::GPRF16RegClass);
+        return std::make_pair(0U, &RISCV::GPRF16NoX0RegClass);
       if (VT == MVT::f32 && Subtarget.hasStdExtZfinx())
-        return std::make_pair(0U, &RISCV::GPRF32RegClass);
+        return std::make_pair(0U, &RISCV::GPRF32NoX0RegClass);
       if (VT == MVT::f64 && Subtarget.hasStdExtZdinx() && !Subtarget.is64Bit())
-        return std::make_pair(0U, &RISCV::GPRPairRegClass);
+        return std::make_pair(0U, &RISCV::GPRF64_RV32NoX0RegClass);
       return std::make_pair(0U, &RISCV::GPRNoX0RegClass);
     case 'f':
       if (Subtarget.hasStdExtZfhmin() && VT == MVT::f16)
@@ -20436,7 +20438,7 @@ RISCVTargetLowering::getRegForInlineAsmConstraint(const TargetRegisterInfo *TRI,
     if (VT == MVT::f32 && Subtarget.hasStdExtZfinx())
       return std::make_pair(0U, &RISCV::GPRF32CRegClass);
     if (VT == MVT::f64 && Subtarget.hasStdExtZdinx() && !Subtarget.is64Bit())
-      return std::make_pair(0U, &RISCV::GPRPairCRegClass);
+      return std::make_pair(0U, &RISCV::GPRF64_RV32CRegClass);
     if (!VT.isVector())
       return std::make_pair(0U, &RISCV::GPRCRegClass);
   } else if (Constraint == "cf") {
@@ -20446,6 +20448,8 @@ RISCVTargetLowering::getRegForInlineAsmConstraint(const TargetRegisterInfo *TRI,
       return std::make_pair(0U, &RISCV::FPR32CRegClass);
     if (Subtarget.hasStdExtD() && VT == MVT::f64)
       return std::make_pair(0U, &RISCV::FPR64CRegClass);
+  } else if (Constraint == "Pr") {
+    return std::make_pair(0U, &RISCV::GPRPairNoX0RegClass);
   }
 
   // Clang will correctly decode the usage of register name aliases into their

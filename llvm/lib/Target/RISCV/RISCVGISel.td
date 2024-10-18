@@ -191,9 +191,9 @@ def : LdPat<zextloadi16, LHU, i32>;
 def : StPat<truncstorei8, SB, GPR, i32>;
 def : StPat<truncstorei16, SH, GPR, i32>;
 
-def : Pat<(anyext GPR:$src), (COPY GPR:$src)>;
-def : Pat<(sext GPR:$src), (ADDIW GPR:$src, 0)>;
-def : Pat<(trunc GPR:$src), (COPY GPR:$src)>;
+def : Pat<(i64 (anyext GPR:$src)), (COPY GPR:$src)>;
+def : Pat<(i64 (sext GPR:$src)), (ADDIW GPR:$src, 0)>;
+def : Pat<(i32 (trunc GPR:$src)), (COPY GPR:$src)>;
 
 def : PatGprGpr<add, ADDW, i32, i32>;
 def : PatGprGpr<sub, SUBW, i32, i32>;

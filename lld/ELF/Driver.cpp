@@ -2753,6 +2753,10 @@ static void readSecurityNotes(Ctx &ctx) {
       referenceFileName = (*it)->getName();
     }
   }
+  bool hasValidPauthAbiCoreInfo =
+      (!ctx.aarch64PauthAbiCoreInfo.empty() &&
+       llvm::any_of(ctx.aarch64PauthAbiCoreInfo,
+                    [](uint8_t c) { return c != 0; }));
 
   for (ELFFileBase *f : ctx.objectFiles) {
     uint32_t features = f->andFeatures;
@@ -2789,9 +2793,11 @@ static void readSecurityNotes(Ctx &ctx) {
                            "GNU_PROPERTY_X86_FEATURE_1_IBT property");
       features |= GNU_PROPERTY_X86_FEATURE_1_IBT;
     }
-    if (ctx.arg.zPacPlt && !(features & GNU_PROPERTY_AARCH64_FEATURE_1_PAC)) {
+    if (ctx.arg.zPacPlt && !(hasValidPauthAbiCoreInfo ||
+                             (features & GNU_PROPERTY_AARCH64_FEATURE_1_PAC))) {
       warn(toString(f) + ": -z pac-plt: file does not have "
-                         "GNU_PROPERTY_AARCH64_FEATURE_1_PAC property");
+                         "GNU_PROPERTY_AARCH64_FEATURE_1_PAC property and no "
+                         "valid PAuth core info present for this link job");
       features |= GNU_PROPERTY_AARCH64_FEATURE_1_PAC;
     }
     ctx.arg.andFeatures &= features;

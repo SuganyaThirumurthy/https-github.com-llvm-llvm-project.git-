@@ -1797,10 +1797,7 @@ bool SPIRVInstructionSelector::selectWaveActiveSum(Register ResVReg,
   if (!InputType)
     report_fatal_error("Input Type could not be determined.");
 
-  // IntTy is used to define the execution scope, set to 3 to denote a
-  // cross-lane interaction equivalent to a SPIR-V subgroup.
   SPIRVType *IntTy = GR.getOrCreateSPIRVIntegerType(32, I, TII);
-
   // Retreive the operation to use based on input type
   bool IsFloatTy = GR.isScalarOrVectorOfType(InputRegister, SPIRV::OpTypeFloat);
   auto Opcode =
@@ -1808,8 +1805,8 @@ bool SPIRVInstructionSelector::selectWaveActiveSum(Register ResVReg,
   return BuildMI(BB, I, I.getDebugLoc(), TII.get(Opcode))
       .addDef(ResVReg)
       .addUse(GR.getSPIRVTypeID(ResType))
-      .addUse(GR.getOrCreateConstInt(3, I, IntTy, TII))
-      .addImm(0) // group operation set to 0 to denote a reduction operation
+      .addUse(GR.getOrCreateConstInt(SPIRV::Scope::Subgroup, I, IntTy, TII))
+      .addImm(SPIRV::GroupOperation::Reduce)
       .addUse(I.getOperand(2).getReg());
 }
 

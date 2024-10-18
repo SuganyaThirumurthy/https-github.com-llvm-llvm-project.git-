@@ -22,7 +22,7 @@ OUTPUT_SKIPPED_RE = re.compile(r"(.text)")
 COMMENT = {"asm": "//", "dasm": "#"}
 
 
-def invoke_tool(exe, prefix_not, cmd_args, testline, verbose=False):
+def invoke_tool(exe, checkRC, cmd_args, testline, verbose=False):
     if isinstance(cmd_args, list):
         args = [applySubstitutions(a, substitutions) for a in cmd_args]
     else:
@@ -32,18 +32,13 @@ def invoke_tool(exe, prefix_not, cmd_args, testline, verbose=False):
     if verbose:
         print("Command: ", cmd)
 
-    # if not is used in runline, the command might or might not
-    # return non-zero code on a single line run
-    try:
-        out = subprocess.check_output(cmd, shell=True, stderr=subprocess.DEVNULL)
-    except:
-        if prefix_not:
-            cmd = 'echo "' + testline + '" | ' + "not " + exe + " " + args
-            if verbose:
-                print("Command: ", cmd)
-            out = subprocess.check_output(cmd, shell=True, stderr=subprocess.DEVNULL)
-        else:
-            raise Exception("Command '{}' return non-zero value".format(cmd))
+    out = subprocess.run(
+        cmd,
+        shell=True,
+        check=checkRC,
+        stdout=subprocess.PIPE,
+        stderr=subprocess.DEVNULL,
+    ).stdout
 
     # Fix line endings to unix CR style.
     return out.decode().replace("\r\n", "\n")
@@ -173,10 +168,13 @@ def main():
             filecheck_cmd = commands[-1]
 
             # special handling for negating exit status
-            prefix_not = ""
-            mc_cmd_args = mc_cmd.split(" ")
+            # if not is used in runline, disable rc check, since
+            # the command might or might not
+            # return non-zero code on a single line run
+            checkRC = True
+            mc_cmd_args = mc_cmd.strip().split()
             if mc_cmd_args[0] == "not":
-                prefix_not = mc_cmd_args[0]
+                checkRC = False
                 mc_tool = mc_cmd_args[1]
                 mc_cmd = mc_cmd[len(mc_cmd_args[0]) :].strip()
             else:
@@ -213,7 +211,7 @@ def main():
                 (
                     check_prefixes,
                     mc_tool,
-                    prefix_not,
+                    checkRC,
                     mc_cmd_args,
                     triple_in_cmd,
                     march_in_cmd,
@@ -230,7 +228,7 @@ def main():
         for (
             prefixes,
             mc_tool,
-            prefix_not,
+            checkRC,
             mc_args,
             triple_in_cmd,
             march_in_cmd,
@@ -249,7 +247,7 @@ def main():
                 # get output for each testline
                 out = invoke_tool(
                     ti.args.llvm_mc_binary or mc_tool,
-                    prefix_not,
+                    checkRC,
                     mc_args,
                     line,
                     verbose=ti.args.verbose,

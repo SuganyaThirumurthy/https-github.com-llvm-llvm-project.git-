@@ -95,13 +95,6 @@ StringRef ArgList::getLastArgValue(OptSpecifier Id, StringRef Default) const {
   return Default;
 }
 
-std::vector<std::string>
-ArgList::getAllArgValues(OptSpecifier Id0, OptSpecifier Id1) const {
-  SmallVector<const char *, 16> Values;
-  AddAllArgValues(Values, Id0, Id1);
-  return std::vector<std::string>(Values.begin(), Values.end());
-}
-
 void ArgList::addOptInFlag(ArgStringList &Output, OptSpecifier Pos,
                            OptSpecifier Neg) const {
   if (Arg *A = getLastArg(Pos, Neg))

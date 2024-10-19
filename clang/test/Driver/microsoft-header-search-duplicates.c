@@ -33,11 +33,9 @@
 // XUN:     %t/test.c 2>&1 | FileCheck -DPWD=%t %t/test.c
 
 // Test the clang-cl driver with a Windows target that implicitly enables the
-// -fms-compatibility option. The /X option is used instead of -nostdinc
-// because the latter option suppresses all system include paths including
-// those specified by /external:I. The -nobuiltininc option is uesd to suppress
-// the Clang resource directory. The -nostdlibinc option is used to suppress
-// search paths for the Windows SDK, CRT, MFC, ATL, etc...
+// -fms-compatibility option. The -nobuiltininc option is uesd to suppress the
+// Clang resource directory. The -nostdlibinc option is used to suppress search
+// paths for the Windows SDK, CRT, MFC, ATL, etc...
 // RUN: env INCLUDE="%t/include/p;%t/include/o" \
 // RUN: env EXTRA_INCLUDE="%t/include/t;%t/include/q;%t/include/r" \
 // RUN: %clang_cl \
@@ -77,21 +75,31 @@
 #include <k.h>
 #include <l.h>
 
-// The expected behavior is that user search paths that duplicate a system search
-// path are ignored, that user search paths that duplicate a previous user
-// search path are ignored, and that system search search paths that duplicate
-// a later system search path are ignored.
-// CHECK:      ignoring duplicate directory "[[PWD]]/include/v"
-// CHECK-NEXT: ignoring duplicate directory "[[PWD]]/include/x"
-// CHECK-NEXT:  as it is a non-system directory that duplicates a system directory
-// CHECK-NEXT: ignoring duplicate directory "[[PWD]]/include/z"
-// CHECK-NEXT:  as it is a non-system directory that duplicates a system directory
-// CHECK-NEXT: ignoring duplicate directory "[[PWD]]/include/t"
-// CHECK-NEXT:  as it is a non-system directory that duplicates a system directory
-// CHECK-NEXT: ignoring duplicate directory "[[PWD]]/include/r"
-// CHECK-NEXT:  as it is a non-system directory that duplicates a system directory
-// CHECK-NEXT: ignoring duplicate directory "[[PWD]]/include/y"
-// CHECK-NEXT: ignoring duplicate directory "[[PWD]]/include/w"
+// Header search paths are processed as follows:
+// 1) Paths specified by the /I and /external:I options are processed in order.
+//    1.1) Paths specified by /I that duplicate a path specified by /external:I
+//         are ignored regardless of the option order.
+//    1.2) Paths specified by /I that duplicate a prior /I option are ignored.
+//    1.3) Paths specified by /external:I that duplicate a later /external:I
+//         option are ignored.
+// 2) Paths specified by the /external:env options are processed in order.
+//    Paths that duplicate a path from a /I option, an external:I option, a
+//    prior /external:env option, or a prior path from the current /external:env
+//    option are ignored.
+// 3) Paths specified by the %INCLUDE% environment variable are processed in
+//    order. Paths that duplicate any other path are ignored.
+
+// XHECK:      ignoring duplicate directory "[[PWD]]/include/v"
+// XHECK-NEXT: ignoring duplicate directory "[[PWD]]/include/x"
+// XHECK-NEXT:  as it is a non-system directory that duplicates a system directory
+// XHECK-NEXT: ignoring duplicate directory "[[PWD]]/include/z"
+// XHECK-NEXT:  as it is a non-system directory that duplicates a system directory
+// XHECK-NEXT: ignoring duplicate directory "[[PWD]]/include/t"
+// XHECK-NEXT:  as it is a non-system directory that duplicates a system directory
+// XHECK-NEXT: ignoring duplicate directory "[[PWD]]/include/r"
+// XHECK-NEXT:  as it is a non-system directory that duplicates a system directory
+// XHECK-NEXT: ignoring duplicate directory "[[PWD]]/include/y"
+// XHECK-NEXT: ignoring duplicate directory "[[PWD]]/include/w"
 // CHECK:      #include <...> search starts here:
 // CHECK-NEXT: [[PWD]]/include/s
 // CHECK-NEXT: [[PWD]]/include/v

@@ -288,8 +288,13 @@ public:
 
   /// getAllArgValues - Get the values of all instances of the given argument
   /// as strings.
+  template<typename ...OptSpecifiers>
   std::vector<std::string>
-  getAllArgValues(OptSpecifier Id0, OptSpecifier Id1 = 0U) const;
+  getAllArgValues(OptSpecifiers ...Ids) const {
+    SmallVector<const char *, 16> Values;
+    AddAllArgValues(Values, Ids...);
+    return std::vector<std::string>(Values.begin(), Values.end());
+  }
 
   /// @}
   /// @name Translation Utilities

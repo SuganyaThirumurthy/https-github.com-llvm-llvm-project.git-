@@ -154,6 +154,8 @@ bool InitHeaderSearch::AddUnmappedPath(const Twine &Path, IncludeDirGroup Group,
   } else if (Group == ExternCSystem) {
     Type = SrcMgr::C_ExternCSystem;
   } else {
+    // Group in External, ExternalAfter, System, (Obj)C(XX)System, After.
+    // FIXME: Assert that the group is known?
     Type = SrcMgr::C_System;
   }
 
@@ -367,10 +369,11 @@ void InitHeaderSearch::AddDefaultIncludePaths(
 
 /// If there are duplicate directory entries in the specified search list,
 /// identify and remove the ones to be ignored and issue a diagnostic.
-/// Returns the number of non-system search paths emoved.
+/// Returns the number of non-system search paths removed.
 static unsigned RemoveDuplicates(const LangOptions &Lang,
                                  std::vector<DirectoryLookupInfo> &SearchList,
-                                 unsigned First, bool Verbose) {
+                                 unsigned First, bool Verbose,
+                                 bool RemovePreviousAllowed = true) {
   llvm::SmallPtrSet<const DirectoryEntry *, 8> SeenDirs;
   llvm::SmallPtrSet<const DirectoryEntry *, 8> SeenFrameworkDirs;
   llvm::SmallPtrSet<const HeaderMap *, 8> SeenHeaderMaps;
@@ -405,9 +408,10 @@ static unsigned RemoveDuplicates(const LangOptions &Lang,
     // search locations that are also present as system search locations
     // regardless of the order in which they appear. The compilers differ with
     // respect to pruning system search locations that duplicate a previous
-    // system search location; GCC preserves the first such occurences while
+    // system search location; GCC preserves the first such occurence while
     // MSVC preserves the last one.
-    if (CurEntry.getDirCharacteristic() != SrcMgr::C_User) {
+    if (RemovePreviousAllowed &&
+        CurEntry.getDirCharacteristic() != SrcMgr::C_User) {
       // Find the matching search entry.
       unsigned FirstDir;
       for (FirstDir = First; FirstDir < i; ++FirstDir) {
@@ -495,23 +499,40 @@ void InitHeaderSearch::Realize(const LangOptions &Lang) {
   std::vector<DirectoryLookupInfo> SearchList;
   SearchList.reserve(IncludePath.size());
 
-  // Quoted arguments go first.
+  // Add search paths for quoted inclusion first.
   for (auto &Include : IncludePath)
     if (Include.Group == Quoted)
       SearchList.push_back(Include);
 
-  // Deduplicate and remember index.
+  // Remove duplicate search paths within the quoted inclusion list.
   RemoveDuplicates(Lang, SearchList, 0, Verbose);
   unsigned NumQuoted = SearchList.size();
 
+  // FIXME: GCC Ignore the last path for quoted inclusion when it matches the
+  // FIXME: first path for angled inclusion. This is observable when using
+  // FIXME: #include_next.
+
+  // Add search paths for angled inclusion next.
   for (auto &Include : IncludePath)
     if (Include.Group == Angled || Include.Group == IndexHeaderMap ||
         Include.Group == External)
       SearchList.push_back(Include);
 
+  // Remove duplicate search paths within the angled inclusion list.
+  // This may leave paths duplicated across the quoted and angled inclusion
+  // sections.
   RemoveDuplicates(Lang, SearchList, NumQuoted, Verbose);
   unsigned NumAngled = SearchList.size();
 
+  // Add search paths for external-after inclusion next and remove duplicates
+  // within them.
+  for (auto &Include : IncludePath)
+    if (Include.Group == ExternalAfter)
+      SearchList.push_back(Include);
+  RemoveDuplicates(Lang, SearchList, NumQuoted, Verbose,
+                   /*RemovePreviousAllowed*/ false);
+
+  // Add search paths for language dependent system paths next.
   for (auto &Include : IncludePath)
     if (Include.Group == System || Include.Group == ExternCSystem ||
         (!Lang.ObjC && !Lang.CPlusPlus && Include.Group == CSystem) ||
@@ -520,14 +541,15 @@ void InitHeaderSearch::Realize(const LangOptions &Lang) {
         (Lang.ObjC && !Lang.CPlusPlus && Include.Group == ObjCSystem) ||
         (Lang.ObjC && Lang.CPlusPlus && Include.Group == ObjCXXSystem))
       SearchList.push_back(Include);
-
+  // Add search paths for system paths to be searched after other system paths.
   for (auto &Include : IncludePath)
     if (Include.Group == After)
       SearchList.push_back(Include);
 
-  // Remove duplicates across both the Angled and System directories.  GCC does
-  // this and failing to remove duplicates across these two groups breaks
-  // #include_next.
+  // Remove duplicate search paths across both the angled inclusion list and
+  // the system search paths. This duplicate removal is necessary to ensure
+  // that header lookup in #include_next directives doesn't resolve to the
+  // same file.
   unsigned NonSystemRemoved =
       RemoveDuplicates(Lang, SearchList, NumQuoted, Verbose);
   NumAngled -= NonSystemRemoved;

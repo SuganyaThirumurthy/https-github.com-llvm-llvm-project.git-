@@ -651,7 +651,7 @@ Value *llvm::lowerObjectSizeCall(
       // If we've outside the end of the object, then we can always access
       // exactly 0 bytes.
       Value *ResultSize = Builder.CreateSub(Size, Offset);
-      Value *UseZero = Builder.CreateICmpULT(Size, Offset);
+      Value *UseZero = Builder.CreateICmpSLT(ResultSize, Offset);
       ResultSize = Builder.CreateZExtOrTrunc(ResultSize, ResultType);
       Value *Ret = Builder.CreateSelect(
           UseZero, ConstantInt::get(ResultType, 0), ResultSize);
@@ -717,6 +717,7 @@ SizeOffsetAPInt ObjectSizeOffsetVisitor::computeImpl(Value *V) {
 
   APInt PrevConstantOffset = ConstantOffset;
 
+  // Accumulate the constant offset if possible, otherwise bail out.
   if (!::CheckedZextOrTrunc(ConstantOffset, InitialIntTyBits))
     return ObjectSizeOffsetVisitor::unknown();
 

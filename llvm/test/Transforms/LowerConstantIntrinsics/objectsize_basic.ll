@@ -123,7 +123,7 @@ define i64 @vla_pointer_size_mismatch(i42 %x) {
 ; CHECK-NEXT:    [[A:%.*]] = alloca i8, i42 [[X]], align 1
 ; CHECK-NEXT:    [[G1:%.*]] = getelementptr i8, ptr [[A]], i8 17
 ; CHECK-NEXT:    [[TMP3:%.*]] = sub i64 [[TMP2]], 17
-; CHECK-NEXT:    [[TMP4:%.*]] = icmp ult i64 [[TMP2]], 17
+; CHECK-NEXT:    [[TMP4:%.*]] = icmp slt i64 [[TMP3]], 17
 ; CHECK-NEXT:    [[TMP5:%.*]] = select i1 [[TMP4]], i64 0, i64 [[TMP3]]
 ; CHECK-NEXT:    [[TMP6:%.*]] = icmp ne i64 [[TMP5]], -1
 ; CHECK-NEXT:    call void @llvm.assume(i1 [[TMP6]])

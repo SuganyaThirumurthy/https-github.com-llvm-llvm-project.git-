@@ -247,3 +247,49 @@ entry:
   %size = call i64 @llvm.objectsize.i64.p0(ptr %p7, i1 false, i1 false, i1 false)
   ret i64 %size
 }
+
+
+define i64 @negative_offset_dynamic_eval(i32 %x, i64 %i) {
+; CHECK-LABEL: @negative_offset_dynamic_eval(
+; CHECK-NEXT:  entry:
+; CHECK-NEXT:    [[ARRAY1:%.*]] = alloca [4 x i32], align 16
+; CHECK-NEXT:    [[ARRAY2:%.*]] = alloca [8 x i32], align 16
+; CHECK-NEXT:    [[TOBOOL_NOT:%.*]] = icmp eq i32 [[X:%.*]], 0
+; CHECK-NEXT:    br i1 [[TOBOOL_NOT]], label [[IF_ELSE:%.*]], label [[IF_THEN:%.*]]
+; CHECK:       if.then:
+; CHECK-NEXT:    br label [[IF_END:%.*]]
+; CHECK:       if.else:
+; CHECK-NEXT:    [[ADD_PTR:%.*]] = getelementptr inbounds i8, ptr [[ARRAY2]], i64 16
+; CHECK-NEXT:    br label [[IF_END]]
+; CHECK:       if.end:
+; CHECK-NEXT:    [[PTR:%.*]] = phi ptr [ [[ARRAY1]], [[IF_THEN]] ], [ [[ADD_PTR]], [[IF_ELSE]] ]
+; CHECK-NEXT:    [[ADD_PTR2_IDX:%.*]] = mul i64 [[I:%.*]], 4
+; CHECK-NEXT:    [[TMP0:%.*]] = add i64 16, [[ADD_PTR2_IDX]]
+; CHECK-NEXT:    [[ADD_PTR2:%.*]] = getelementptr inbounds i32, ptr [[PTR]], i64 [[I]]
+; CHECK-NEXT:    [[TMP1:%.*]] = sub i64 32, [[TMP0]]
+; CHECK-NEXT:    [[TMP2:%.*]] = icmp slt i64 [[TMP1]], [[TMP0]]
+; CHECK-NEXT:    [[TMP3:%.*]] = select i1 [[TMP2]], i64 0, i64 [[TMP1]]
+; CHECK-NEXT:    [[TMP4:%.*]] = icmp ne i64 [[TMP3]], -1
+; CHECK-NEXT:    call void @llvm.assume(i1 [[TMP4]])
+; CHECK-NEXT:    ret i64 [[TMP3]]
+;
+entry:
+  %array1 = alloca [4 x i32], align 16
+  %array2 = alloca [8 x i32], align 16
+  %tobool.not = icmp eq i32 %x, 0
+  br i1 %tobool.not, label %if.else, label %if.then
+
+if.then:
+  br label %if.end
+
+if.else:
+  %add.ptr = getelementptr inbounds i8, ptr %array2, i64 16
+  br label %if.end
+
+if.end:
+  %ptr = phi ptr [ %array1, %if.then ], [ %add.ptr, %if.else ]
+  %add.ptr2 = getelementptr inbounds i32, ptr %ptr, i64 %i
+  %objsize = call i64 @llvm.objectsize.i64.p0(ptr %add.ptr2, i1 false, i1 true, i1 true)
+  ret i64 %objsize
+}
+

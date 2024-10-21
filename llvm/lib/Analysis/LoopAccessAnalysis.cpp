@@ -1521,7 +1521,7 @@ llvm::getPtrStride(PredicatedScalarEvolution &PSE, Type *AccessTy, Value *Ptr,
   // and any memory access dependent on it would be immediate UB
   // when executed.
   if (auto *GEP = dyn_cast<GetElementPtrInst>(Ptr);
-      GEP && GEP->isInBounds() && (Stride == 1 || Stride == -1))
+      GEP && GEP->isInBounds())
     return Stride;
 
   // If the null pointer is undefined, then a access sequence which would

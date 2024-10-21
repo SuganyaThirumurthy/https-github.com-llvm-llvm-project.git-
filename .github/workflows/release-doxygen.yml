@@ -40,7 +40,7 @@ jobs:
       upload: ${{ inputs.upload && !contains(inputs.release-version, 'rc') }}
     steps:
       - name: Checkout LLVM
-        uses: actions/checkout@b4ffde65f46336ab88eb53be808477a3936bae11 # v4.1.1
+        uses: actions/checkout@163217dfcd28294438ea1c1c149cfaf66eec283e # v4.1.1
 
       - name: Setup Python env
         uses: actions/setup-python@v5

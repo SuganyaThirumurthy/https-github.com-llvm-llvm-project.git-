@@ -1671,8 +1671,8 @@ bool llvm::canConstantFoldCallTo(const CallBase *Call, const Function *F) {
            Name == "cos" || Name == "cosf" ||
            Name == "cosh" || Name == "coshf";
   case 'e':
-    return Name == "exp" || Name == "expf" ||
-           Name == "exp2" || Name == "exp2f";
+    return Name == "exp" || Name == "expf" || Name == "exp2" ||
+           Name == "exp2f" || Name == "erf" || Name == "erff";
   case 'f':
     return Name == "fabs" || Name == "fabsf" ||
            Name == "floor" || Name == "floorf" ||
@@ -2411,6 +2411,11 @@ static Constant *ConstantFoldScalarCall1(StringRef Name,
       break;
     case LibFunc_logl:
       return nullptr;
+    case LibFunc_erf:
+    case LibFunc_erff:
+      if (TLI->has(Func))
+        return ConstantFoldFP(erf, APF, Ty);
+      break;
     case LibFunc_nearbyint:
     case LibFunc_nearbyintf:
     case LibFunc_rint:
@@ -3596,7 +3601,6 @@ bool llvm::isMathLibCallNoop(const CallBase *Call,
         // Per POSIX, this MAY fail if Op is denormal. We choose not failing.
         return true;
 
-
       case LibFunc_asinl:
       case LibFunc_asin:
       case LibFunc_asinf:
@@ -3623,6 +3627,10 @@ bool llvm::isMathLibCallNoop(const CallBase *Call,
       case LibFunc_sqrt:
       case LibFunc_sqrtf:
         return Op.isNaN() || Op.isZero() || !Op.isNegative();
+
+      case LibFunc_erf:
+      case LibFunc_erff:
+        return true;
 
       // FIXME: Add more functions: sqrt_finite, atanh, expm1, log1p,
       // maybe others?

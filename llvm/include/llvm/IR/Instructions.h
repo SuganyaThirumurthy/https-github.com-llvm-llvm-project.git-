@@ -250,6 +250,11 @@ public:
            !isVolatile();
   }
 
+  /// Returns false if this type would be invalid in the
+  /// creation of a load atomic instruction.
+  static bool isValidAtomicTy(Type *Ty, const DataLayout *DL = nullptr,
+                              AtomicOrdering AO = AtomicOrdering::NotAtomic);
+
   Value *getPointerOperand() { return getOperand(0); }
   const Value *getPointerOperand() const { return getOperand(0); }
   static unsigned getPointerOperandIndex() { return 0U; }
